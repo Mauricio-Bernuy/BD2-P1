@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stack>
 #include <algorithm>
+#include <sstream>
 
 using namespace std;
 
@@ -23,15 +24,41 @@ struct Register{
         ml = ml.substr(0,40); 
         pss = pss.substr(0,11);      
 
-        strcpy(name, (nam + string(5 - nam.length() ,' ')).c_str());
-        
-        strcpy(user, (usr + string(5 - usr.length() ,' ')).c_str());
-
-        strcpy(mail, (ml + string(20 - ml.length() ,' ')).c_str());
-        strcpy(pass, (pss + string(15 - pss.length() ,' ')).c_str());
+        strcpy(name, (nam + string(30 - nam.length() ,' ')).c_str());
+        strcpy(user, (usr + string(30 - usr.length() ,' ')).c_str());
+        strcpy(mail, (ml + string(41 - ml.length() ,' ')).c_str());
+        strcpy(pass, (pss + string(12 - pss.length() ,' ')).c_str());
     }
 };
 
+vector<Register> registers;
+
+void load_data(){
+	std::ifstream Usuario("Usuario.csv");
+	
+	string current;	
+	while(getline(Usuario, current)){
+        string name, user, mail, pass; 
+		stringstream ss(current);
+
+		getline(ss, current, ',');
+		name = current;
+		getline(ss, current, ',');
+        user = current;
+        getline(ss, current, ',');
+        mail = current;
+        getline(ss, current, ',');
+        pass = current;
+
+        Register temp(name, user, mail, pass);
+		registers.push_back(temp);
+	}
+}
+
+
+
 int main(){
+    load_data();
+    cout<<"done!\n";
     return 0;
 }
