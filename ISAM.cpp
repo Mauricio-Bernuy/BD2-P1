@@ -35,8 +35,8 @@ struct Register{
   Register(){};
   void print(){
     cout << "------------------------------"<<endl;
-    cout << "Codigo: " << name << endl;
-    cout << "Usuario: " << user << endl;
+    cout << "Nombre: " << string(name).substr(0,29) << endl;
+    cout << "Usuario: " << string(user).substr(0,29) << endl;
     cout << "------------------------------"<<endl;
   };
 };
@@ -129,6 +129,38 @@ void MergeSort(vector<Index> &vec, int l, int r){
 //   return stream;
 // }
 
+vector<Register> registers;
+
+void load_data(){
+	std::ifstream Usuario("Usuario.csv");
+	
+	string current;	
+	while(getline(Usuario, current)){
+    string name, user, mail, pass; 
+    stringstream ss(current);
+
+    getline(ss, current, ',');
+    name = current;
+    getline(ss, current, ',');
+    user = current;
+    getline(ss, current, ',');
+    mail = current;
+    getline(ss, current, ',');
+    pass = current;
+
+    Register temp(name, user, mail, pass);
+    registers.push_back(temp);
+	}
+}
+
+
+void offload(vector<Register> vectout, string filename){
+  ofstream out(filename, ios::app | ios::binary);
+  for (auto i = vectout.begin(); i != vectout.end(); ++i){
+    out << *i;
+  }
+  out.close();
+}
 
 class ISAM{
   private:
@@ -255,6 +287,17 @@ class ISAM{
 
 
 int main(){
+
+  load_data();
+
+  offload(registers, "test.dat");
+
+  ifstream pepito("test.dat", ios::binary);
+  Register pepe;
+
+  pepito>>pepe;
+
+
   //ISAM structure("datos1.txt");
   Register registro1((char*)"Ana", (char*)"ana1", (char*)"i1l.com", (char*)"abcdefg");
   Register registro2((char*)"Beto", (char*)"beto1", (char*)"mail2.com", (char*)"abcdefg");
@@ -265,13 +308,15 @@ int main(){
   regs.push_back(registro1);
   regs.push_back(registro2);
   regs.push_back(registro3);
+  regs.push_back(registro4);
 
   int temp = 0;
   int l = 0;
   int u = regs.size();
   string key = "Stephano";
   while (u >= l){
-    cout << "In while " << regs[temp].name << endl;
+    cout << "In while ";
+    regs[temp].print();
     temp = (l+u)/2;
     if (key < regs[temp].name) u = temp - 1;
     else{
