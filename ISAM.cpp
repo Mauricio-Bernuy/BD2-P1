@@ -5,11 +5,13 @@
 #include<cstdio>
 #include<vector>
 #include <bits/stdc++.h> 
+#include <algorithm>
 
 using namespace std;
 
 #define INDEX_SIZE 4
 #define PAGE_SIZE 4
+#define INDEX_LEVELS 1
 
 struct Register{
   char name[30];
@@ -43,12 +45,31 @@ struct Register{
 
 struct Page{
   Register records[PAGE_SIZE];
-  long first_empty;
-  long next_bucket;
+  
+  long next_bucket; // if filled, will point to next bucket
+  long first_empty; // pos of first empty in page, if PAGE_SIZE -> bucket full
+
+  Page(){};
+  Page(vector<Register> in){
+    for (auto i = 0; i < in.size(); ++i)
+      records[i] = in[i];
+
+    first_empty = in.size();
+    next_bucket = -1;
+  };
+
+  string getkey(){
+    return records[0].name;
+  }
+
 };
 
-struct Index
-{
+struct IndexLvl{
+    long address;
+    char index[30];
+};
+
+struct Index{
     long address;
     char index[30];
 };
@@ -70,6 +91,16 @@ istream& operator>> (istream& stream, Index & record){
 
 ostream& operator<< (ostream& stream, Index & record){
   stream.write((char*) &record, sizeof(record));
+  return stream;
+}
+
+ostream& operator<< (ostream& stream, Page & page){
+  stream.write((char*) &page, sizeof(page));
+  return stream;
+}
+
+istream& operator>> (istream& stream, Page & page){
+  stream.read((char*) &page, sizeof(page));
   return stream;
 }
 
@@ -156,8 +187,20 @@ void load_data(){
 
 void offload(vector<Register> vectout, string filename){
   ofstream out(filename, ios::app | ios::binary);
-  for (auto i = vectout.begin(); i != vectout.end(); ++i){
-    out << *i;
+
+  vector<Register> records;
+  for (auto i = 0; i < vectout.size(); ++i){
+    
+    records.push_back(vectout[i]);
+
+    if (records.size() == PAGE_SIZE || i >= vectout.size()){
+      Page pageout(records);
+
+      //out << pageout;
+
+      out.write((char*) &pageout, sizeof(pageout));
+      records.clear();
+    }
   }
   out.close();
 }
@@ -290,13 +333,16 @@ int main(){
 
   load_data();
 
+
   offload(registers, "test.dat");
 
   ifstream pepito("test.dat", ios::binary);
-  Register pepe;
+  Page pepe;
+  vector<Page> peppa;
 
-  pepito>>pepe;
-
+  while(pepito >> pepe){
+    peppa.push_back(pepe);
+  };
 
   //ISAM structure("datos1.txt");
   Register registro1((char*)"Ana", (char*)"ana1", (char*)"i1l.com", (char*)"abcdefg");
