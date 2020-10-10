@@ -328,11 +328,15 @@ class ISAM{
     // }
 };
 
+bool reg_nom_comp(Register a, Register b){
+    return string(a.name) < string(b.name);
+}
 
 int main(){
 
   load_data();
-
+  
+  sort(registers.begin(),registers.end(),reg_nom_comp);
 
   offload(registers, "test.dat");
 
