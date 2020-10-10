@@ -17,26 +17,24 @@ struct Register{
   char mail[41];
   char pass[12];
 
-  Register(string nam, string usr, string ml, string pss){
-      nam = nam.substr(0,29);
-      usr = usr.substr(0,29);
-      ml = ml.substr(0,40); 
-      pss = pss.substr(0,11);      
+  Register(const char nam[30],const char usr[30],const char ml[41],const char pss[12]){
+      strcpy(name, nam);
+      strcpy(user, usr);
+      strcpy(mail, ml);
+      strcpy(pass, pss);
 
-      strcpy(name, (nam + string(30 - nam.length() ,' ')).c_str());
       cout << "Defined name as " << name << endl;
-      strcpy(user, (usr + string(30 - usr.length() ,' ')).c_str());
       cout << "Defined user as " << user << endl;
-      strcpy(mail, (ml + string(41 - ml.length() ,' ')).c_str());
       cout << "Defined mail as " << mail << endl;
-      strcpy(pass, (pss + string(12 - pss.length() ,' ')).c_str());
       cout << "Definned pass as " << pass << endl;
   }
   Register(){};
   void print(){
     cout << "------------------------------"<<endl;
-    cout << "Nombre: " << string(name).substr(0,29) << endl;
-    cout << "Usuario: " << string(user).substr(0,29) << endl;
+    cout << "Nombre: " << name << endl;
+    cout << "Usuario: " << user << endl;
+    cout << "Mail: " << mail << endl;
+    cout << "Password: " << pass << endl;
     cout << "------------------------------"<<endl;
   };
 };
@@ -148,11 +146,10 @@ void load_data(){
     getline(ss, current, ',');
     pass = current;
 
-    Register temp(name, user, mail, pass);
+    Register temp(name.c_str(), user.c_str(), mail.c_str(), pass.c_str());
     registers.push_back(temp);
 	}
 }
-
 
 void offload(vector<Register> vectout, string filename){
   ofstream out(filename, ios::app | ios::binary);
@@ -256,8 +253,6 @@ class ISAM{
         }
       }
       
-      
-      
       // long ind = index[key].i;
       // Register response;
       // if(ind!=-1){
@@ -287,16 +282,12 @@ class ISAM{
 
 
 int main(){
-
   load_data();
-
   offload(registers, "test.dat");
-
   ifstream pepito("test.dat", ios::binary);
   Register pepe;
-
   pepito>>pepe;
-
+  pepe.print();
 
   //ISAM structure("datos1.txt");
   Register registro1((char*)"Ana", (char*)"ana1", (char*)"i1l.com", (char*)"abcdefg");
