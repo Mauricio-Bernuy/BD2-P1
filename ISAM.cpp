@@ -62,14 +62,19 @@ struct Page{
 
 };
 
-struct IndexLvl{
-    long address;
-    char index[30];
-};
-
 struct Index{
     long address;
-    char index[30];
+    char key[30];
+
+    Index(){};
+    Index(long add, const char k[30]):address(add){
+      strcpy(key, k);
+    };
+};
+
+
+struct IndexLvl{
+  Index indexes[INDEX_SIZE];
 };
 
 istream& operator>> (istream& stream, Register & record){
@@ -116,7 +121,7 @@ void sort(vector<Index> &vec, int l, int m, int r){
   j = 0;
   k = l;
   while (i < n1 && j < n2) { 
-      if (L[i].index <= R[j].index) { 
+      if (L[i].key <= R[j].key) { 
           vec[k] = L[i]; 
           i++; 
       } 
@@ -192,14 +197,29 @@ void offload(vector<Register> vectout, string filename){
 
     if (records.size() == PAGE_SIZE || i >= vectout.size()){
       Page pageout(records);
-
-      //out << pageout;
-
       out.write((char*) &pageout, sizeof(pageout));
       records.clear();
     }
   }
   out.close();
+
+  // create indexes
+  int level = 1;
+  string indexname = filename.substr(0, filename.length()-4) + "_index" + to_string(level) + ".dat";
+  
+  ifstream data(filename, ios::binary);
+  out.open(indexname, ios::app | ios::binary);
+
+  Page tmp;
+  int i = 0;
+
+  while(data >> tmp){
+    Index idx((i * sizeof(tmp)), tmp.getkey().c_str());
+    out << idx;
+    i++;
+  }
+
+
 }
 
 class ISAM{
@@ -248,7 +268,7 @@ class ISAM{
             ind.address = position;
             data_file.seekg(position, ios::beg);
             data_file >> temp;
-            strcpy(ind.index, temp.name);
+            strcpy(ind.key, temp.name);
             index.push_back(ind);
           }
           MergeSort(index, 0, INDEX_SIZE);
@@ -266,12 +286,12 @@ class ISAM{
       index_file.close();
     }
 
-
     ISAM(string _fileName){
       fileName = _fileName;
       fstream file(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
       (file.is_open()) ? file.close() : throw("Unable to open files");
-      indexName = "index_"+_fileName;
+      indexName = fileName.substr(0, fileName.length()-4) + "_index" + to_string(1) + ".dat";
+  
       fstream file2(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
       (file2.is_open()) ? file2.close() : throw("Unable to open files");
       index = leerIndice();
@@ -290,9 +310,9 @@ class ISAM{
       int u = sizeof(index);
       while (u >= l){
         temp = (l+u)/2;
-        if (key < index[temp].index) u = temp - 1;
+        if (key < index[temp].key) u = temp - 1;
         else{
-          if (key > index[temp].index) l = temp + 1; else break;
+          if (key > index[temp].key) l = temp + 1; else break;
         }
       }
       
@@ -333,13 +353,26 @@ int main(){
   sort(registers.begin(),registers.end(),reg_nom_comp);
 
   offload(registers, "test.dat");
+
   ifstream pepito("test.dat", ios::binary);
   Page pepe;
   vector<Page> peppa;
 
   while(pepito >> pepe){
     peppa.push_back(pepe);
+    cout<< pepe.records[0].name<<'\n';
   };
+
+
+  ifstream popito("test_index1.dat", ios::binary);
+  Index popo;
+  vector<Index> peppe;
+
+  while(popito >> popo){
+    peppe.push_back(popo);
+    cout<< "key : " << popo.key << " located in address: "<< popo.address <<'\n';
+  };
+
 
   //ISAM structure("datos1.txt");
   Register registro1((char*)"Ana", (char*)"ana1", (char*)"i1l.com", (char*)"abcdefg");
