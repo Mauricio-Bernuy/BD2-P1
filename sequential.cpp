@@ -312,7 +312,7 @@ public:
         ofs.open("auxil.dat", ios::out | ios::app | ios::binary);
         ofs.seekg(0, ios::end);
 
-        int position = ofs.tellg();
+        long position = ofs.tellg(); // BYTES
 
         if (searchpos(record.name, false) != -1){
             cout<<"key already present\n";
@@ -350,7 +350,7 @@ public:
         }
     }   
 
-    bool delet (string key){
+    bool delet(string key){
         Register tmp, prevreg;
 
         int position = searchpos(key);
