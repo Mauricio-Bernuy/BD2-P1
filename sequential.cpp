@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <sstream>
 
-
 using namespace std;
 
 enum file_sel {a,d};
