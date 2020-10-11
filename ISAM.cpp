@@ -46,7 +46,7 @@ struct Page{
   Register records[PAGE_SIZE];
   
   long next_bucket; // if filled, will point to next bucket
-  long first_empty; // pos of first empty in page, if PAGE_SIZE -> bucket full
+  int first_empty; // pos of first empty in page, if PAGE_SIZE -> bucket full
 
   Page(){};
   Page(vector<Register> in){
@@ -334,5 +334,4 @@ int main(){
   ISAM ourISAM("Registro de Usuarios.dat", "Usuario.csv");
   
   auto resutl = ourISAM.search("a Fulton");
-  
 }
