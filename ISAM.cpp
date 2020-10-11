@@ -6,6 +6,7 @@
 #include<vector>
 #include <bits/stdc++.h> 
 #include <algorithm>
+#include <tuple>
 
 using namespace std;
 
@@ -257,7 +258,7 @@ class ISAM{
       }
     }
 
-    Register search(string key){
+    tuple<Register, long> search(string key){
       fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
       if(!datafile.is_open()) throw("Unable to open files");
       int temp = 0;
@@ -277,24 +278,30 @@ class ISAM{
       long address = index[temp].address;
       cout << address << endl;
       datafile.seekg(address);
+      if (address != -1){
+        
+      }
       Page curr_page;
       datafile >> curr_page;
-
-      temp = 0;
-      l = 0;
-      u = address - curr_page.first_empty;
-      
-      
-
-      // long ind = index[key].i;
-      // Register response;
-      // if(ind!=-1){
-      //   fstream file(fileName, ios::in | ios:: binary);
-      //   file.seekg((index[key].i-1)*sizeof(response));
-      //   file >> response;
-      // }
-      // else{strcpy(response.codigo,"NA");strcpy(response.nombre,"Not found");}
-			// return response;
+      auto iterator = curr_page;
+      while (1){
+        for (auto it : iterator.records) {
+          if (it.name == key){
+            auto thing = make_tuple(it,address);
+            cout << key << " was found!" << endl;
+            return thing;
+          }
+          if (iterator.next_bucket != -1){
+            datafile.seekg(iterator.next_bucket);
+            datafile >> iterator;
+          } else {
+            cout << "Unable to locate key" << endl;
+            Register reg;
+            auto otherhitng = make_tuple(reg, -1);
+            return otherhitng;
+          }
+        }
+      }
     }
 
     // void agregarRegistro(Register record){
@@ -315,5 +322,7 @@ class ISAM{
 
 int main(){
   ISAM ourISAM("Registro de Usuarios.dat", "Usuario.csv");
-
+  
+  auto resutl = ourISAM.search("a Fulton");
+  
 }
