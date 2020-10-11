@@ -304,8 +304,55 @@ class ISAM{
       }
     }
 
-    // void agregarRegistro(Register record){
-    //   string key = record.codigo;
+    void agregarRegistro(Register record){
+      fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
+      if(!datafile.is_open()) throw("Unable to open files");
+      string key = record.codigo;
+      int temp = 0;
+      int l = 0;
+      int u = sizeof(index);
+      while (u >= l){
+        temp = (l+u)/2;
+        if (key < index[temp].key) u = temp - 1;
+        else{
+          if (key > index[temp].key){
+            if (key < index[temp+1].key) break;
+            l = temp + 1;
+          }
+          else break;
+        }
+      }
+      long address = index[temp].address;
+      cout << address << endl;
+      datafile.seekg(address);
+      if (address != -1){
+        
+      }
+      Page curr_page;
+      datafile >> curr_page;
+      auto iterator = curr_page;
+      long insert_pos = address - curr_page.first_empty;
+      long temp;
+
+      //if(curr_page.next_bucket != curr_page.first_empty){
+      while(curr_page.first_empty == -1){
+        if(next_bucket == -1){
+          datafile.seekg(0, ios::end);
+          Page new_page;
+          new_page.first_empty = sizeof(record) + datafile.tellg();
+          new_page.next_bucket = -1;
+          curr_page.records[0] = record;
+          break;
+        }
+        temp = curr_page.next_bucket;
+        datafile.seekg(curr_page.next_bucket);
+        datafile >> curr_page;
+        insert_pos = temp - curr_page.first_empty;
+      }
+      curr_page.records[insert_pos];
+      MergeSort(curr_page.records
+        MergeSort(vector<Index> &vec, int l, int r){
+      
     //   if(index[key].i == -1){
     //     fstream file(fileName , ios::out | ios:: binary | ios::app);
     //     file.write((char*)&record, sizeof(record));
@@ -317,7 +364,7 @@ class ISAM{
     //   }
     //   return;
 
-    // }
+    }
 };
 
 int main(){
