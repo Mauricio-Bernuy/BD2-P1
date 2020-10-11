@@ -118,7 +118,7 @@ istream& operator>> (istream& stream, Page & page){
   return stream;
 }
 
-void sort(Index *vec, int low, int high, int mid){
+void sort(Register *arr, int low, int high, int mid){
   int i, j, k, c[high+1];
 	i = low;
 	k = low;
@@ -150,9 +150,9 @@ void sort(Index *vec, int low, int high, int mid){
 	}
 }
 
-void MergeSort(Index* vec, int low, int high){
+void MergeSort(Register* vec, int low, int high){
   if(low < high){
-    int temp = (l + r)/2;
+    int temp = (low + high)/2;
     MergeSort(vec, low, temp);
     MergeSort(vec, temp + 1, high);
     sort(vec, low, high, temp);
@@ -333,6 +333,7 @@ class ISAM{
         i++;
       }
     }
+
     bool erase(string key){
       PageLocation p;
 
@@ -340,12 +341,12 @@ class ISAM{
       if(!datafile.is_open()) throw("Unable to open files");
 
       p = search(key);
-      if(!p.exists()) return false;
+      if(!p.exists) return false;
       if (p.address != -1 && p.index != -1){
           datafile.seekg(p.address);
           Page pag;
           datafile >> pag;
-          pag.records[index] = pag.records[pag.first_empty -1];
+          pag.records[p.index] = pag.records[pag.first_empty -1];
           pag.first_empty = pag.first_empty -1;
           MergeSort(pag.records, 0, pag.first_empty);
           datafile.seekp(p.address);
@@ -355,12 +356,12 @@ class ISAM{
       } else throw ("Unable to locate register");
     }
 
-    bool insert(Register reg){
+    /*bool insert(Register reg){
 
       fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
       if(!datafile.is_open()) throw("Unable to open files");
-      PageLocation p;
-      p = search(key);
+      PageLocation p = search(reg.name);
+
       if (!p.exists) return false;
       }
       if (p.index != -2){ //if not smaller than first
@@ -378,7 +379,7 @@ class ISAM{
           datafile.close();
           
       } else throw ("Unable to locate register");
-    }
+    }*/
 };
 
 int main(){
