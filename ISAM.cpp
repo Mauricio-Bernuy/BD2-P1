@@ -118,48 +118,44 @@ istream& operator>> (istream& stream, Page & page){
   return stream;
 }
 
-void sort(vector<Index> &vec, int l, int m, int r){
-  int i, j, k;
-  int n1 = m - l + 1;
-  int n2 = r - m; 
-  vector<Index> L, R; 
-  for (i = 0; i < n1; i++) 
-      L.push_back(vec[l + i]);
-  for (j = 0; j < n2; j++) 
-      R.push_back(vec[m + 1 + j]); 
-
-  i = 0;
-  j = 0;
-  k = l;
-  while (i < n1 && j < n2) { 
-      if (L[i].key <= R[j].key) { 
-          vec[k] = L[i]; 
-          i++; 
-      } 
-      else { 
-          vec[k] = R[j]; 
-          j++; 
-      } 
-      k++; 
-  } 
-  while (i < n1) { 
-      vec[k] = L[i]; 
-      i++; 
-      k++; 
-  } 
-  while (j < n2) { 
-      vec[k] = R[j]; 
-      j++; 
-      k++; 
-  } 
+void sort(Index *vec, int low, int high, int mid){
+  int i, j, k, c[high+1];
+	i = low;
+	k = low;
+	j = mid + 1;
+	while (i <= mid && j <= high) {
+			if (arr[i] < arr[j]) {
+					c[k] = arr[i];
+					k++;
+					i++;
+			}
+			else  {
+					c[k] = arr[j];
+					k++;
+					j++;
+			}
+	}
+	while (i <= mid) {
+			c[k] = arr[i];
+			k++;
+			i++;
+	}
+	while (j <= high) {
+			c[k] = arr[j];
+			k++;
+			j++;
+	}
+	for (i = low; i < k; i++)  {
+			arr[i] = c[i];
+	}
 }
 
-void MergeSort(vector<Index> &vec, int l, int r){
-  if(l < r){
+void MergeSort(Index* vec, int low, int high){
+  if(low < high){
     int temp = (l + r)/2;
-    MergeSort(vec, l, temp);
-    MergeSort(vec, temp + 1, r);
-    sort(vec, l, temp, r);
+    MergeSort(vec, low, temp);
+    MergeSort(vec, temp + 1, high);
+    sort(vec, low, high, temp);
   }
 }
 
@@ -337,21 +333,52 @@ class ISAM{
         i++;
       }
     }
+    bool erase(string key){
+      PageLocation p;
 
-    // void agregarRegistro(Register record){
-    //   string key = record.codigo;
-    //   if(index[key].i == -1){
-    //     fstream file(fileName , ios::out | ios:: binary | ios::app);
-    //     file.write((char*)&record, sizeof(record));
-    //     index[key].i = (file.tellg()/(long)sizeof(record));
-    //     file.close();
-    //   }
-    //   else{
-    //     cout << "Code taken\n";
-    //   }
-    //   return;
+      fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
+      if(!datafile.is_open()) throw("Unable to open files");
 
-    // }
+      p = search(key);
+      if(!p.exists()) return false;
+      if (p.address != -1 && p.index != -1){
+          datafile.seekg(p.address);
+          Page pag;
+          datafile >> pag;
+          pag.records[index] = pag.records[pag.first_empty -1];
+          pag.first_empty = pag.first_empty -1;
+          MergeSort(pag.records, 0, pag.first_empty);
+          datafile.seekp(p.address);
+          datafile << pag;
+          datafile.close();
+          
+      } else throw ("Unable to locate register");
+    }
+
+    bool insert(Register reg){
+
+      fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
+      if(!datafile.is_open()) throw("Unable to open files");
+      PageLocation p;
+      p = search(key);
+      if (!p.exists) return false;
+      }
+      if (p.index != -2){ //if not smaller than first
+          datafile.seekg(p.address);
+          Page pag;
+          datafile >> pag;
+          if(p.index == 4){
+            
+          } // if needs to create overflow
+          pag.records[index] = pag.records[pag.first_empty -1];
+          pag.first_empty = pag.first_empty + 1;
+          MergeSort(pag.records, 0, pag.first_empty);
+          datafile.seekp(p.address);
+          datafile << pag;
+          datafile.close();
+          
+      } else throw ("Unable to locate register");
+    }
 };
 
 int main(){
