@@ -357,30 +357,36 @@ class ISAM{
       } else throw ("Unable to locate register");
     }
 
-    /*bool insert(Register reg){
+    bool insert(Register reg){
 
       fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
       if(!datafile.is_open()) throw("Unable to open files");
       PageLocation p = search(reg.name);
-
       if (!p.exists) return false;
+
+      datafile.seekg(p.address);
+      Page pag;
+      datafile >> pag;
+
+      if (p.index == -2){ //if smaller than first
+        strcpy(index[0].key, reg.name);
       }
-      if (p.index != -2){ //if not smaller than first
-          datafile.seekg(p.address);
-          Page pag;
-          datafile >> pag;
-          if(p.index == 4){
-            
-          } // if needs to create overflow
-          pag.records[index] = pag.records[pag.first_empty -1];
-          pag.first_empty = pag.first_empty + 1;
-          MergeSort(pag.records, 0, pag.first_empty);
-          datafile.seekp(p.address);
-          datafile << pag;
-          datafile.close();
-          
-      } else throw ("Unable to locate register");
-    }*/
+      if(p.index == 4){ // if needs to create overflow
+        datafile.seekp(0, ios::end);
+        pag.next_bucket = datafile.tellp();
+        p.address = datafile.tellp();
+        Page new_page;
+        page.first_empty = 0;
+        page.next_bucket = -1;
+        pag = new_page;
+      }
+      pag.records[index] = pag.records[pag.first_empty];
+      pag.first_empty = pag.first_empty + 1;
+      MergeSort(pag.records, 0, pag.first_empty-1);
+      datafile.seekp(p.address);
+      datafile << pag;
+      datafile.close();
+    }
 };
 
 int main(){
