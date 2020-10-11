@@ -61,7 +61,7 @@ struct Page{
     return records[0].name;
   }
 
-};
+};A
 
 struct Index{
     long address;
@@ -73,6 +73,14 @@ struct Index{
     };
 };
 
+struct PageLocation{
+  Register regist;
+  long address = -1;
+  int index = -1;
+  
+  PageLocation(){};
+  PageLocation(Register reg, long add, int ind):regist(reg), address(add), index(ind){};
+};
 
 struct IndexLvl{
   Index indexes[INDEX_SIZE];
@@ -258,7 +266,9 @@ class ISAM{
       }
     }
 
-    tuple<Register, long> search(string key){
+    PageLocation search(string key){
+      PageLocation empty;
+
       fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
       if(!datafile.is_open()) throw("Unable to open files");
       int temp = 0;
@@ -275,6 +285,8 @@ class ISAM{
           else break;
         }
       }
+      if (temp >= index.size()) return empty;
+
       long address = index[temp].address;
       cout << address << endl;
       datafile.seekg(address);
@@ -285,21 +297,21 @@ class ISAM{
       datafile >> curr_page;
       auto iterator = curr_page;
       while (1){
+        int i = 0;
         for (auto it : iterator.records) {
           if (it.name == key){
-            auto thing = make_tuple(it,address);
+            PageLocation result(it, address, i);
             cout << key << " was found!" << endl;
-            return thing;
+            return result;
           }
           if (iterator.next_bucket != -1){
             datafile.seekg(iterator.next_bucket);
             datafile >> iterator;
           } else {
             cout << "Unable to locate key" << endl;
-            Register reg;
-            auto otherhitng = make_tuple(reg, -1);
-            return otherhitng;
+            return empty;
           }
+          i++;
         }
       }
     }
