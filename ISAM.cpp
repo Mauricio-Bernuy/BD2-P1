@@ -119,7 +119,8 @@ istream& operator>> (istream& stream, Page & page){
 }
 
 void sort(Register *arr, int low, int high, int mid){
-  int i, j, k, c[high+1];
+  int i, j, k;
+  Register c[high+1];
 	i = low;
 	k = low;
 	j = mid + 1;
