@@ -379,12 +379,13 @@ class ISAM{
         datafile.seekp(0, ios::end);
         pag.next_bucket = datafile.tellp();
         p.address = datafile.tellp();
+        p.index = 0;
         Page new_page;
-        page.first_empty = 0;
-        page.next_bucket = -1;
+        new_page.first_empty = 0;
+        new_page.next_bucket = -1;
         pag = new_page;
       }
-      pag.records[index] = pag.records[pag.first_empty];
+      pag.records[pag.first_empty] = reg;
       pag.first_empty = pag.first_empty + 1;
       MergeSort(pag.records, 0, pag.first_empty-1);
       datafile.seekp(p.address);
