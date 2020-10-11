@@ -313,6 +313,26 @@ class ISAM{
         }
       }
     }
+    bool erase(string key){
+      PageLocation p;
+
+      fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
+      if(!datafile.is_open()) throw("Unable to open files");
+
+      p = search(key);
+      if (p.address != -1 && p.index != -1){
+          datafile.seekg(p.address);
+          Page pag;
+          datafile >> pag;
+          pag.records[index] = pag.records[pag.first_empty -1];
+          pag.first_empty = pag.first_empty -1;
+          //SORTEAR
+          datafile.seekp(p.address);
+          datafile << pag;
+          datafile.close();
+          
+      } else throw ("Unable to locate register");
+    }
 
     // void agregarRegistro(Register record){
     //   string key = record.codigo;
