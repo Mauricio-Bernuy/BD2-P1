@@ -259,7 +259,7 @@ class ISAM{
 
     Register search(string key){
       fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
-      if(!file.is_open()) throw("Unable to open files");
+      if(!datafile.is_open()) throw("Unable to open files");
       int temp = 0;
       int l = 0;
       int u = sizeof(index);
@@ -267,8 +267,8 @@ class ISAM{
         temp = (l+u)/2;
         if (key < index[temp].key) u = temp - 1;
         else{
-          if (key > index[temp].index){
-            if (key < index[temp+1].index) break;
+          if (key > index[temp].key){
+            if (key < index[temp+1].key) break;
             l = temp + 1;
           }
           else break;
