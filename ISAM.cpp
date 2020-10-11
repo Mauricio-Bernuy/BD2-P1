@@ -77,9 +77,11 @@ struct PageLocation{
   Register regist;
   long address = -1;
   int index = -1;
+
+  bool exists = true;
   
   PageLocation(){};
-  PageLocation(Register reg, long add, int ind):regist(reg), address(add), index(ind){};
+  PageLocation(Register reg, long add, int ind, bool ex = true):regist(reg), address(add), index(ind), exists(ex){};
 };
 
 struct IndexLvl{
@@ -268,12 +270,30 @@ class ISAM{
 
     PageLocation search(string key){
       PageLocation empty;
+      Register reg_empty;
 
       fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
       if(!datafile.is_open()) throw("Unable to open files");
       int temp = 0;
       int l = 0;
       int u = sizeof(index);
+
+      if (key < index[0].key){   
+        Page paged;  
+        long address = 0;
+        datafile.seekg(address);
+        datafile >> paged;
+
+        while (paged.next_bucket != -1){
+          address = paged.next_bucket;
+          datafile.seekg(address);
+          datafile >> paged;
+        }
+        
+        PageLocation less(reg_empty, address, -2, false);
+        return less;
+      }
+
       while (u >= l){
         temp = (l+u)/2;
         if (key < index[temp].key) u = temp - 1;
@@ -285,8 +305,9 @@ class ISAM{
           else break;
         }
       }
-      if (temp >= index.size()) return empty;
 
+      if (temp >= index.size()) return empty;
+      
       long address = index[temp].address;
       cout << address << endl;
       datafile.seekg(address);
@@ -302,15 +323,18 @@ class ISAM{
             cout << key << " was found!" << endl;
             return result;
           }
-          if (iterator.next_bucket != -1){
-            datafile.seekg(iterator.next_bucket);
-            datafile >> iterator;
-          } else {
-            cout << "Unable to locate key" << endl;
-            return empty;
-          }
-          i++;
         }
+        if (iterator.next_bucket != -1){
+          address = iterator.next_bucket;
+          datafile.seekg(iterator.next_bucket);
+          datafile >> iterator;
+          
+        } else {
+          cout << "Unable to locate key" << endl;
+          PageLocation result(reg_empty, address, iterator.first_empty, false);
+          return result;
+        }
+        i++;
       }
     }
 
@@ -333,5 +357,5 @@ class ISAM{
 int main(){
   ISAM ourISAM("Registro de Usuarios.dat", "Usuario.csv");
   
-  auto resutl = ourISAM.search("a Fulton");
+  auto resutl = ourISAM.search("Alexusis Fulton");
 }
