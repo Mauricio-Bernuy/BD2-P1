@@ -393,4 +393,6 @@ int main(){
   ISAM ourISAM("Registro de Usuarios.dat", "Usuario.csv");
   
   auto resutl = ourISAM.search("Alexusis Fulton");
+
+  ourISAM.erase("Kurt Nelson");
 }
