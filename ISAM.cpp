@@ -184,6 +184,9 @@ class ISAM{
 
   public:
 
+    string getfileName() {return fileName;};
+    string getindexName() {return indexName;};
+
     void loadIndex(){ // TO DO -> array of levels 
       Index idx;
       ifstream in_idx(indexName, ios::binary); if (!in_idx.is_open()) return;
@@ -266,14 +269,13 @@ class ISAM{
     }
 
     PageLocation search(string key){
-      PageLocation empty;
+      PageLocation empty, first_free;
       Register reg_empty;
 
       fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
       if(!datafile.is_open()) throw("Unable to open files");
       int temp = 0;
       int l = 0;
-      //int u = sizeof(index);
       int u = index.size()-1;
 
       if (key < index[0].key){   
@@ -314,11 +316,18 @@ class ISAM{
       Page curr_page;
       datafile >> curr_page;
       auto iterator = curr_page;
+      bool found_first = false;
       while (1){
         int i = 0;
-        for (auto it : iterator.records) {
-          if (it.name == key){
-            PageLocation result(it, address, i);
+        if (iterator.first_empty < INDEX_SIZE && !found_first){
+          PageLocation result(reg_empty, address, iterator.first_empty, false);
+          first_free = result;
+          found_first = true;
+        }
+
+        for (auto it = 0; it < iterator.first_empty; ++it){
+          if (iterator.records[it].name == key){
+            PageLocation result(iterator.records[it], address, i);
             cout << key << " was found!" << endl;
             return result;
           }
@@ -331,8 +340,9 @@ class ISAM{
           
         } else {
           cout << "Unable to locate key" << endl;
-          PageLocation result(reg_empty, address, iterator.first_empty, false);
-          return result;
+          PageLocation result(reg_empty, address, iterator.first_empty, false); // should return first available bucket for insert
+          if (found_first) return first_free;
+          else return result;
         }
       }
     }
@@ -340,7 +350,7 @@ class ISAM{
     bool erase(string key){
       PageLocation p;
 
-      fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
+      fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::binary);
       if(!datafile.is_open()) throw("Unable to open files");
 
       p = search(key);
@@ -350,7 +360,7 @@ class ISAM{
           Page pag;
           datafile >> pag;
           pag.records[p.index] = pag.records[pag.first_empty -1];
-          pag.first_empty = pag.first_empty -1;
+          pag.first_empty--;
           MergeSort(pag.records, 0, pag.first_empty - 1);
           datafile.seekp(p.address);
           datafile << pag;
@@ -362,11 +372,10 @@ class ISAM{
     }
 
     bool insert(Register reg){
-
-      fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
+      fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::binary);
       if(!datafile.is_open()) throw("Unable to open files");
       PageLocation p = search(reg.name);
-      if (!p.exists) return false;
+      if (p.exists) return false;
 
       datafile.seekg(p.address);
       Page pag;
@@ -374,30 +383,65 @@ class ISAM{
 
       if (p.index == -2){ //if smaller than first
         strcpy(index[0].key, reg.name);
+        // rewrite to index
+        fstream indexfile(indexName, ios::out | ios::in | ios::ate | ios::binary);
+        indexfile.seekp(0);
+        indexfile << index[0];
+        indexfile.close();
+        p.index = pag.first_empty;
       }
-      if(p.index == 4){ // if needs to create overflow
+
+      if (p.index == 4){ // if needs to create overflow
         datafile.seekp(0, ios::end);
         pag.next_bucket = datafile.tellp();
-        p.address = datafile.tellp();
+        datafile.seekp(p.address);
+        datafile << pag;
+
+        p.address = pag.next_bucket;
         p.index = 0;
         Page new_page;
         new_page.first_empty = 0;
         new_page.next_bucket = -1;
         pag = new_page;
       }
+
       pag.records[pag.first_empty] = reg;
-      pag.first_empty = pag.first_empty + 1;
-      MergeSort(pag.records, 0, pag.first_empty-1);
+      pag.first_empty++;
+      MergeSort(pag.records, 0, pag.first_empty - 1);
       datafile.seekp(p.address);
       datafile << pag;
       datafile.close();
+
+      return true;
     }
+    
 };
 
 int main(){
   ISAM ourISAM("Registro de Usuarios.dat", "Usuario.csv");
   
-  auto resutl = ourISAM.search("Alexusis Fulton");
+  auto result = ourISAM.search("Alexusis Fulton");
 
   ourISAM.erase("Kurt Nelson");
+
+  ourISAM.insert(Register("Roger Wilson", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
+  ourISAM.insert(Register("Kurt Nelson", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
+  ourISAM.insert(Register("Athena Lloyd", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
+  ourISAM.insert(Register("Aaron Carter", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
+  ourISAM.erase("Rocco Nelson");
+
+  ifstream if_datafile(ourISAM.getfileName(), ios::in | ios::binary);
+  ifstream if_indexfile(ourISAM.getindexName(), ios::in | ios::binary);
+  Page pag;
+  vector<Page> pag_res;
+  Index ind;
+  vector<Index> ind_res;
+
+  while(if_datafile >> pag)
+    pag_res.push_back(pag);
+  
+  while(if_indexfile >> ind)
+    ind_res.push_back(ind);
+  
+  cout<<"done!\n";
 }
