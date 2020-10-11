@@ -61,7 +61,7 @@ struct Page{
     return records[0].name;
   }
 
-};A
+};
 
 struct Index{
     long address;
@@ -290,9 +290,7 @@ class ISAM{
       long address = index[temp].address;
       cout << address << endl;
       datafile.seekg(address);
-      if (address != -1){
-        
-      }
+
       Page curr_page;
       datafile >> curr_page;
       auto iterator = curr_page;
