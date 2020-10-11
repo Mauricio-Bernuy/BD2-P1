@@ -125,7 +125,7 @@ void sort(Register *arr, int low, int high, int mid){
 	k = low;
 	j = mid + 1;
 	while (i <= mid && j <= high) {
-			if (arr[i] < arr[j]) {
+			if (arr[i].name < arr[j].name) {
 					c[k] = arr[i];
 					k++;
 					i++;
@@ -273,7 +273,8 @@ class ISAM{
       if(!datafile.is_open()) throw("Unable to open files");
       int temp = 0;
       int l = 0;
-      int u = sizeof(index);
+      //int u = sizeof(index);
+      int u = index.size()-1;
 
       if (key < index[0].key){   
         Page paged;  
@@ -303,7 +304,8 @@ class ISAM{
         }
       }
 
-      if (temp >= index.size()) return empty;
+      if (temp >= index.size()) 
+        return empty;
       
       long address = index[temp].address;
       cout << address << endl;
@@ -320,6 +322,7 @@ class ISAM{
             cout << key << " was found!" << endl;
             return result;
           }
+          i++;
         }
         if (iterator.next_bucket != -1){
           address = iterator.next_bucket;
@@ -331,7 +334,6 @@ class ISAM{
           PageLocation result(reg_empty, address, iterator.first_empty, false);
           return result;
         }
-        i++;
       }
     }
 
@@ -349,12 +351,14 @@ class ISAM{
           datafile >> pag;
           pag.records[p.index] = pag.records[pag.first_empty -1];
           pag.first_empty = pag.first_empty -1;
-          MergeSort(pag.records, 0, pag.first_empty);
+          MergeSort(pag.records, 0, pag.first_empty - 1);
           datafile.seekp(p.address);
           datafile << pag;
           datafile.close();
+          return true;
           
       } else throw ("Unable to locate register");
+      return false;
     }
 
     bool insert(Register reg){
