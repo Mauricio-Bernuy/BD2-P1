@@ -152,156 +152,109 @@ void MergeSort(vector<Index> &vec, int l, int r){
   }
 }
 
-// template<class T>
-// istream& operator>> (istream& stream, T & record){
-//   stream.read((char*) &record, sizeof(record));
-//   return stream;
-// }
-// template<class T>
-// ostream& operator<< (ostream& stream, T & record){
-//   stream.write((char*) &record, sizeof(record));
-//   return stream;
-// }
-
-vector<Register> registers;
-
-void load_data(){
-	std::ifstream Usuario("Usuario.csv");
-	
-	string current;	
-	while(getline(Usuario, current)){
-    string name, user, mail, pass; 
-    stringstream ss(current);
-
-    getline(ss, current, ',');
-    name = current;
-    getline(ss, current, ',');
-    user = current;
-    getline(ss, current, ',');
-    mail = current;
-    getline(ss, current, ',');
-    pass = current;
-
-    Register temp(name.c_str(), user.c_str(), mail.c_str(), pass.c_str());
-    registers.push_back(temp);
-	}
+bool reg_nom_comp(Register a, Register b){
+    return string(a.name) < string(b.name);
 }
 
-void offload(vector<Register> vectout, string filename){
-  ofstream out(filename, ios::app | ios::binary);
+streampos fileSize(string filename){
+    streampos fsize = 0;
+    ifstream file (filename, ios::binary);
 
-  vector<Register> records;
-  for (auto i = 0; i < vectout.size(); ++i){
-    
-    records.push_back(vectout[i]);
+    fsize = file.tellg();
+    file.seekg (0, ios::end);
+    fsize = file.tellg() - fsize;
+    file.close();
 
-    if (records.size() == PAGE_SIZE || i >= vectout.size()){
-      Page pageout(records);
-      out.write((char*) &pageout, sizeof(pageout));
-      records.clear();
-    }
-  }
-  out.close();
-
-  // create indexes
-  int level = 1;
-  string indexname = filename.substr(0, filename.length()-4) + "_index" + to_string(level) + ".dat";
-  
-  ifstream data(filename, ios::binary);
-  out.open(indexname, ios::app | ios::binary);
-
-  Page tmp;
-  int i = 0;
-
-  while(data >> tmp){
-    Index idx((i * sizeof(tmp)), tmp.getkey().c_str());
-    out << idx;
-    i++;
-  }
-
-
+    return fsize;
 }
 
 class ISAM{
   private:
     string fileName;
-    string indexName;
-    int init_size;
-    int index_size = INDEX_SIZE;
-    vector<Index> index = {}; //diccionario en memoria principal
+    string indexName; // TO DO -> array of levels 
+    vector<Index> index = {}; // diccionario en memoria principal
 
   public:
-    vector<Index> leerIndice(){
-      Index index;
-      vector<Index> ind = {};
-      fstream ind_file(indexName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
-      if (ind_file.is_open()){
-        long ind_size = 0;
-        string location = "";
-        ind_file.seekg(0, ios::end);
-        init_size = 0;
-        ind_size = ind_file.tellg();
-        if(ind_size == 0) {ind_file.close(); return ind;};
-        ind_file.seekg(0);
-				while(ind_file >> index){ 
-          ++init_size;
-          ind.push_back(index);
-        }
-        ind_file.close();
-      }
-      return ind;
+
+    void loadIndex(){ // TO DO -> array of levels 
+      Index idx;
+      ifstream in_idx(indexName, ios::binary); if (!in_idx.is_open()) return;
+      while(in_idx >> idx)
+        index.push_back(idx);
+      in_idx.close();
     }
 
-    void parseIndex(){
-      fstream data_file(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
-      if(data_file.is_open()){
-        fstream index_file(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
-        if(index_file.is_open()){
-          data_file.seekg(0, ios::end);
-          long data_size = data_file.tellg();
-          long data_page_num = data_size / sizeof(Page);
-          Index ind;
-          Register temp;
-          long position;
-          for(long i = 0; i < INDEX_SIZE ; ++i){
-            position = i*sizeof(Page);
-            ind.address = position;
-            data_file.seekg(position, ios::beg);
-            data_file >> temp;
-            strcpy(ind.key, temp.name);
-            index.push_back(ind);
-          }
-          MergeSort(index, 0, INDEX_SIZE);
-          index_file.close();
-        }
-        data_file.close();        
-      }
-    }
-
-    void guardarIndices(){
-      ofstream index_file(indexName, ios::out | ios_base::app);
-      for(auto it= index.begin(); it != index.end(); ++it){
-					index_file << *it;
-      }
-      index_file.close();
-    }
-
-    ISAM(string _fileName){
+    ISAM(string _fileName, string csv = ""){
       fileName = _fileName;
-      fstream file(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
-      (file.is_open()) ? file.close() : throw("Unable to open files");
       indexName = fileName.substr(0, fileName.length()-4) + "_index" + to_string(1) + ".dat";
-  
-      fstream file2(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
-      (file2.is_open()) ? file2.close() : throw("Unable to open files");
-      index = leerIndice();
-      if(index.empty()){
-        parseIndex();
-        guardarIndices();
-      }
+
+      /*fstream file(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
+      (file.is_open()) ? file.close() : throw("Unable to open files");*/
+      /*fstream file2(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
+      (file2.is_open()) ? file2.close() : throw("Unable to open files");*/ 
+
+      // later check for file errors
+      
+      if (fileSize(fileName) == 0 && !csv.empty()) csv2dat();
+      if (fileSize(indexName) == 0) build_index();  
+      loadIndex();
     }
 
-    ~ISAM(){
+    ~ISAM(){}
+
+    void csv2dat(string csv = "Usuario.csv"){
+      vector<Register> registers;
+
+      // load and parse csv
+      std::ifstream Usuario(csv);
+      string current;	
+      while(getline(Usuario, current)){
+        string name, user, mail, pass; 
+        stringstream ss(current);
+
+        getline(ss, current, ',');
+        name = current;
+        getline(ss, current, ',');
+        user = current;
+        getline(ss, current, ',');
+        mail = current;
+        getline(ss, current, ',');
+        pass = current;
+
+        Register temp(name.c_str(), user.c_str(), mail.c_str(), pass.c_str());
+        registers.push_back(temp);
+      }
+
+      sort(registers.begin(),registers.end(),reg_nom_comp);
+      
+      // write pages to data file 
+      ofstream out(fileName, ios::app | ios::binary);
+      vector<Register> records;
+      for (auto i = 0; i < registers.size(); ++i){
+        records.push_back(registers[i]);
+        if (records.size() == PAGE_SIZE || i >= registers.size()){
+          Page pageout(records);
+          out.write((char*) &pageout, sizeof(pageout));
+          records.clear();
+        }
+      }
+      out.close();
+    }
+
+    void build_index(int levels = INDEX_LEVELS){
+      int level = 1;
+
+      ifstream data(fileName, ios::binary);
+      ofstream out(indexName, ios::app | ios::binary);
+
+      Page tmp;
+      int i = 0;
+
+      while(data >> tmp){
+        Index idx((i * sizeof(tmp)), tmp.getkey().c_str());
+        out << idx;
+        i++;
+      }
     }
 
     Register buscar(string key){
@@ -343,71 +296,7 @@ class ISAM{
     // }
 };
 
-bool reg_nom_comp(Register a, Register b){
-    return string(a.name) < string(b.name);
-}
-
 int main(){
-  load_data();
-  
-  sort(registers.begin(),registers.end(),reg_nom_comp);
+  ISAM ourISAM("Registro de Usuarios.dat", "Usuario.csv");
 
-  offload(registers, "test.dat");
-
-  ifstream pepito("test.dat", ios::binary);
-  Page pepe;
-  vector<Page> peppa;
-
-  while(pepito >> pepe){
-    peppa.push_back(pepe);
-    cout<< pepe.records[0].name<<'\n';
-  };
-
-
-  ifstream popito("test_index1.dat", ios::binary);
-  Index popo;
-  vector<Index> peppe;
-
-  while(popito >> popo){
-    peppe.push_back(popo);
-    cout<< "key : " << popo.key << " located in address: "<< popo.address <<'\n';
-  };
-
-
-  //ISAM structure("datos1.txt");
-  Register registro1((char*)"Ana", (char*)"ana1", (char*)"i1l.com", (char*)"abcdefg");
-  Register registro2((char*)"Beto", (char*)"beto1", (char*)"mail2.com", (char*)"abcdefg");
-  Register registro3((char*)"Camila", (char*)"cam1", (char*)"mail3.com", (char*)"abcdefg");
-  Register registro4((char*)"Stephano", (char*)"st", (char*)"mail4.com", (char*)"abcdefg");
-
-	vector<Register> regs;
-  regs.push_back(registro1);
-  regs.push_back(registro2);
-  regs.push_back(registro3);
-  regs.push_back(registro4);
-
-  int temp = 0;
-  int l = 0;
-  int u = regs.size();
-  string key = "Stephano";
-  while (u >= l){
-    cout << "In while ";
-    regs[temp].print();
-    temp = (l+u)/2;
-    if (key < regs[temp].name) u = temp - 1;
-    else{
-      if (key > regs[temp].name) l = temp + 1; else break;
-    }
-  }
-  //cout << endl << endl << regs[temp].name << endl;
-  
-
-
-	// for(int i =0; i < 3; ++i){
-  //   structure.agregarRegistro(regs[i]);
-  // }
-  // structure.agregarRegistro(registro4);
-	// Register buscado = rf.buscar("0005");
-	// buscado.print();
-  return 0;
 }
