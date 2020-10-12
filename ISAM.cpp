@@ -88,7 +88,7 @@ struct PageLocation{
 };
 
 struct Query{
-  short operation;
+  short operation; // Insert = -2, delete = 1; select = 2;
   string key;
   Register reg;
 };
@@ -321,9 +321,8 @@ class ISAM{
           else break;
         }
       }
-      if(done == false){
+      if(done == false)
         if(lock == 1) mtx.lock();
-      }
       if (temp >= index.size()) 
         return empty;
       
@@ -368,7 +367,8 @@ class ISAM{
     bool erase(string key, short lock){
       cout << "In delete with key " << key<< "and lock " << lock << endl;
       PageLocation p;
-      if(lock == 2) mtx.lock();
+      if(done == false)
+        if(lock == 2) mtx.lock();
       fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::binary);
       if(!datafile.is_open()) throw("Unable to open files");
 
@@ -397,7 +397,8 @@ class ISAM{
 
     bool insert(Register reg, short lock){
       cout << "In insert with reg" << endl;
-      if(lock == 2) mtx.lock();
+      if(done == false)
+        if(lock == 2) mtx.lock();
       fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::binary);
       if(!datafile.is_open()) throw("Unable to open files");
       PageLocation p = search(reg.name, lock);
@@ -496,6 +497,7 @@ class ISAM{
             thread qu2(&ISAM::execute_query, this, q2, lock);
             qu1.join();
             qu2.join();
+            return;
           }
         }
       }
