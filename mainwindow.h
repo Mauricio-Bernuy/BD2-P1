@@ -32,6 +32,7 @@ private slots:
     void on_pushButton_2_clicked();
     void on_pushButton_6_clicked();
     void update_table_ISAM();
+    void update_table_SEQUENTIAL();
     void clear_files();
 };
 #endif // MAINWINDOW_H

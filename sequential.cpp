@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -41,9 +42,9 @@ struct s_Register{
     }
 };
 
-vector<s_Register> registers;
+inline vector<s_Register> registers;
 
-void load_data(string csv = "Usuario.csv"){
+inline void load_data(string csv = "Usuario.csv"){
 	std::ifstream Usuario(csv);
 	
 	string current;	
@@ -65,11 +66,11 @@ void load_data(string csv = "Usuario.csv"){
 	}
 }
 
-bool s_reg_nom_comp(s_Register a, s_Register b){
+inline bool s_reg_nom_comp(s_Register a, s_Register b){
     return string(a.name) < string(b.name);
 }
 
-streampos fileSize(string filename){
+inline streampos s_fileSize(string filename){
     streampos fsize = 0;
     ifstream file (filename, ios::binary);
 
@@ -92,7 +93,7 @@ public:
 
     void construct(string n, string csv = ""){
         Name = n;
-        if ((!csv.empty()) && fileSize(n) == 0) {
+        if ((!csv.empty()) && s_fileSize(n) == 0) {
             load_data(csv);
             insertAll(registers);
         }
@@ -105,9 +106,9 @@ public:
         s_Register tmp;
         int next_pos = 0;
         file_sel next_coord;
-        if (fileSize(Name) <= 0){
+        if (s_fileSize(Name) <= 0){
             next_coord = a;
-            if (fileSize("auxil.dat") <= 0)
+            if (s_fileSize("auxil.dat") <= 0)
                 return result;
         }
         else
@@ -153,9 +154,9 @@ public:
         file_sel nx_file;
         pos prev;
         
-        if (fileSize(Name) <= 0){
+        if (s_fileSize(Name) <= 0){
             nx_file = a;
-            if (fileSize("auxil.dat") <= 0)
+            if (s_fileSize("auxil.dat") <= 0)
                 return prev;
         }
         else
@@ -197,9 +198,9 @@ public:
         int nx_ptr = 0;
         file_sel nx_file;
         pos next;
-        if (fileSize(Name) <= 0){
+        if (s_fileSize(Name) <= 0){
             nx_file = a;
-            if (fileSize("auxil.dat") <= 0)
+            if (s_fileSize("auxil.dat") <= 0)
                 return next;
         }
         else
@@ -265,7 +266,7 @@ public:
         ofs.close();
 
         int l = 0;
-        int u = fileSize(Name)/sizeof(tmp)-1;
+        int u = s_fileSize(Name)/sizeof(tmp)-1;
 
         while (u >= l){
             int m = (u + l)/2;
@@ -401,8 +402,8 @@ public:
         return true;
     }    
 };
-/*
 
+/*
 int main(){
 
 

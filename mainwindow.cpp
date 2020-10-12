@@ -7,14 +7,11 @@
 #include <QDebug>
 #include <QTableWidget>
 
-#include "ISAM.cpp"
-//#include "sequential.cpp"
-
 bool Isam = false;
 bool Seq = false;
 
-#define ISAM_FILENAME ISAM_FILE.dat;
-#define SEQUENTIAL_FILENAME SEQUENTIAL_FILE.dat;
+string ISAM_FILENAME = "ISAM_FILE.dat";
+string SEQUENTIAL_FILENAME = "SEQUENTIAL_FILE.dat";
 
 std::string filename;
 
@@ -40,14 +37,22 @@ void MainWindow::on_pushButton_3_clicked() // search
 {
     QString tg = ui->target1->text();
     std::string target = tg.toStdString();
-    if (Isam){
-        PageLocation loc;
-        loc = ourISAM.search(target);
 
-    } else {
-        Register newReg;
-        //newReg = ourSequential.search(target);
+    switch (STRUCTURE_TYPE){
+        case SEQUENTIAL:{
+            s_Register newReg;
+            newReg = ourSEQUENTIAL.search(target);
+            break;
+        }
 
+        case ISAM:{
+            PageLocation loc;
+            loc = ourISAM.search(target);
+            break;
+        }
+
+        default:
+            return;
     }
 
     /*auto result = ourISAM.search("Alexusis Fulton");
@@ -80,46 +85,52 @@ void MainWindow::on_pushButton_4_clicked() //insert
     strcpy(mail, (ml + string(41 - ml.length() ,' ')).c_str());
     strcpy(pass, (pss + string(12 - pss.length() ,' ')).c_str());
 
-    Register reg = Register(name, user, mail, pass);
     bool added;
-    if (Isam){
-        added = ourISAM.insert(reg);
-    } else {
-        return;
-        //added = ourSequential.add(reg);
+
+    switch (STRUCTURE_TYPE){
+        case SEQUENTIAL:{
+            ourSEQUENTIAL.add(s_Register(name, user, mail, pass));
+            break;
+        }
+
+        case ISAM:{
+            added = ourISAM.insert(Register(name, user, mail, pass));
+            break;
+        }
+
+        default:
+            return;
     }
 }
 
 void MainWindow::on_pushButton_5_clicked() //delete
 {
-    QString target = ui->target3->text();
+    // QString target = ui->target3->text();
 
-    switch (STRUCTURE_TYPE){
-        case SEQUENTIAL:
-
-            break;
-
-        case ISAM:
-
-            break;
-
-        default:
-            return;
     QString tg = ui->target2->text();
     std::string target = tg.toStdString();
     bool deleteded = false;
-    if (Isam){
-        deleteded = ourISAM.erase(target);
-    } else {
-        return;
-        //deleteded = ourSequential.delet(target);
+
+    switch (STRUCTURE_TYPE){
+        case SEQUENTIAL:{
+            deleteded = ourSEQUENTIAL.delet(target);
+            break;
+        }
+
+        case ISAM:{
+            deleteded = ourISAM.erase(target);
+            break;
+        }
+
+        default:
+            return;
     }
 }
 
 void MainWindow::update_table_ISAM()
 {
     ui->tableWidget->setRowCount(0);
-    ifstream if_datafile("ISAM.dat", ios::in | ios::binary);
+    ifstream if_datafile(ISAM_FILENAME, ios::in | ios::binary);
     //ifstream if_indexfile(ourISAM.getindexName(), ios::in | ios::binary);
 
     Page pag;
@@ -139,15 +150,31 @@ void MainWindow::update_table_ISAM()
     }
 }
 
-void MainWindow::update_table_SEQUENTIAL(){
+void MainWindow::update_table_SEQUENTIAL()
+{
+    ui->tableWidget->setRowCount(0);
 
+    auto v = ourSEQUENTIAL.load();
+
+    for (auto i = 0; i < v.size(); ++i){
+        ui->tableWidget->insertRow(ui->tableWidget->rowCount());
+
+        ui->tableWidget->setItem
+                (ui->tableWidget->rowCount() - 1, 0, new QTableWidgetItem(QString::fromStdString(string(v[i].name).substr(0,30))));
+        ui->tableWidget->setItem
+                (ui->tableWidget->rowCount() - 1, 1, new QTableWidgetItem(QString::fromStdString(string(v[i].user).substr(0,30))));
+        ui->tableWidget->setItem
+                (ui->tableWidget->rowCount() - 1, 2, new QTableWidgetItem(QString::fromStdString(string(v[i].mail).substr(0,41))));
+        ui->tableWidget->setItem
+                (ui->tableWidget->rowCount() - 1, 3, new QTableWidgetItem(QString::fromStdString(string(v[i].pass).substr(0,12))));
+    }
 }
 
 void MainWindow::clear_files(){
-    fstream clr1 (ISAM_FILENAME, ios::out | ios::trunc);
-    fstream clr2 (ourISAM.getindexName(), ios::out | ios::trunc);
-    fstream clr3 (SEQUENTIAL_FILENAME, ios::out | ios::trunc);
-    fstream clr4 ("auxil.dat", ios::out | ios::trunc);
+    fstream clr1(ISAM_FILENAME, ios::out | ios::trunc);
+    fstream clr2(ISAM_FILENAME.substr(0, ISAM_FILENAME.length()-4) + "_index" + to_string(1) + ".dat",ios::out | ios::trunc);
+    fstream clr3(SEQUENTIAL_FILENAME, ios::out | ios::trunc);
+    fstream clr4("auxil.dat", ios::out | ios::trunc);
     clr1.close();
     clr2.close();
     clr3.close();
@@ -160,7 +187,7 @@ void MainWindow::on_pushButton_clicked() // ISAM BUTTON
     clear_files();
 
     STRUCTURE_TYPE = ISAM;
-    ourISAM.construct(ISAM_FILENAME, "Usuario.csv");
+    ourISAM.construct( ISAM_FILENAME , "Usuario.csv");
     update_table_ISAM();
 }
 
@@ -176,5 +203,16 @@ void MainWindow::on_pushButton_2_clicked() // SEQUENTIAL BUTTON
 
 void MainWindow::on_pushButton_6_clicked()
 {
-    update_table_ISAM();
+    switch (STRUCTURE_TYPE){
+        case SEQUENTIAL:
+            update_table_SEQUENTIAL();
+            break;
+
+        case ISAM:
+            update_table_ISAM();
+            break;
+
+        default:
+            return;
+    }
 }
