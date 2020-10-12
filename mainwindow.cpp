@@ -13,7 +13,8 @@
 bool Isam = false;
 bool Seq = false;
 
-enum TYPE {ISAM, SEQ};
+#define ISAM_FILENAME ISAM_FILE.dat;
+#define SEQUENTIAL_FILENAME SEQUENTIAL_FILE.dat;
 
 std::string filename;
 
@@ -22,8 +23,6 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    //Isam isam("Usuario.csv")
-    //Seq seq("Usuario.csv")
     QStringList header;
     header << "Name" << "User" << "Mail" << "Pass";
     ui->tableWidget->setColumnCount(4);
@@ -72,11 +71,17 @@ void MainWindow::on_pushButton_5_clicked()
 {
     QString target = ui->target3->text();
 
+    switch (STRUCTURE_TYPE){
+        case SEQUENTIAL:
 
-    if (Isam){
-        
-    } else {
-        
+            break;
+
+        case ISAM:
+
+            break;
+
+        default:
+            return;
     }
 }
 
@@ -103,29 +108,39 @@ void MainWindow::update_table_ISAM()
     }
 }
 
-
-void MainWindow::on_pushButton_clicked()
-{
-    if (Seq){
-        Seq = false;
-        Isam = true;
-    }
-    Isam = true;
-
-    ourISAM.construct("ISAM.dat", "Usuario.csv");
-    update_table_ISAM();
+void MainWindow::update_table_SEQUENTIAL(){
 
 }
 
+void MainWindow::clear_files(){
+    fstream clr1 (ISAM_FILENAME, ios::out | ios::trunc);
+    fstream clr2 (ourISAM.getindexName(), ios::out | ios::trunc);
+    fstream clr3 (SEQUENTIAL_FILENAME, ios::out | ios::trunc);
+    fstream clr4 ("auxil.dat", ios::out | ios::trunc);
+    clr1.close();
+    clr2.close();
+    clr3.close();
+    clr4.close();
+}
 
 
-void MainWindow::on_pushButton_2_clicked()
+void MainWindow::on_pushButton_clicked() // ISAM BUTTON
 {
-      if(Isam){
-          Seq = true;
-          Isam = false;
-      }
-      Seq = true;
+    clear_files();
+
+    STRUCTURE_TYPE = ISAM;
+    ourISAM.construct(ISAM_FILENAME, "Usuario.csv");
+    update_table_ISAM();
+}
+
+
+void MainWindow::on_pushButton_2_clicked() // SEQUENTIAL BUTTON
+{
+    clear_files();
+
+    STRUCTURE_TYPE = SEQUENTIAL;
+    ourSEQUENTIAL.construct(SEQUENTIAL_FILENAME, "Usuario.csv");
+    update_table_SEQUENTIAL();
 }
 
 void MainWindow::on_pushButton_6_clicked()

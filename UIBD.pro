@@ -18,7 +18,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     ISAM.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    sequential.cpp
 
 HEADERS += \
     mainwindow.h
