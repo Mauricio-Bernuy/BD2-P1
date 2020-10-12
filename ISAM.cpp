@@ -15,6 +15,8 @@ using namespace std;
 #define PAGE_SIZE 4
 #define INDEX_LEVELS 1
 
+mutex mtx;
+
 struct Register{
   char name[30];
   char user[30];
@@ -189,6 +191,7 @@ class ISAM{
     string fileName;
     string indexName; // TO DO -> array of levels 
     vector<Index> index = {}; // diccionario en memoria principal
+    bool done = false;
 
   public:
 
@@ -318,7 +321,9 @@ class ISAM{
           else break;
         }
       }
-
+      if(done == false){
+        if(lock == 1) mtx.lock();
+      }
       if (temp >= index.size()) 
         return empty;
       
@@ -363,12 +368,12 @@ class ISAM{
     bool erase(string key, short lock){
       cout << "In delete with key " << key<< "and lock " << lock << endl;
       PageLocation p;
-
+      if(lock == 2) mtx.lock();
       fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::binary);
       if(!datafile.is_open()) throw("Unable to open files");
 
       p = search(key, lock);
-      if(!p.exists) return false;
+      if(!p.exists){ mtx.unlock(); return false; }
       if (p.address != -1 && p.index != -1){
           datafile.seekg(p.address);
           Page pag;
@@ -379,18 +384,24 @@ class ISAM{
           datafile.seekp(p.address);
           datafile << pag;
           datafile.close();
+          mtx.unlock();
           return true;
           
       } else throw ("Unable to locate register");
+      if(done == false){
+        mtx.unlock();
+        done = true;
+      }
       return false;
     }
 
     bool insert(Register reg, short lock){
       cout << "In insert with reg" << endl;
+      if(lock == 2) mtx.lock();
       fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::binary);
       if(!datafile.is_open()) throw("Unable to open files");
       PageLocation p = search(reg.name, lock);
-      if (p.exists) return false;
+      if (p.exists) { mtx.unlock(); return false; }
 
       datafile.seekg(p.address);
       Page pag;
@@ -426,7 +437,10 @@ class ISAM{
       datafile.seekp(p.address);
       datafile << pag;
       datafile.close();
-
+      if(done == false){
+        mtx.unlock();
+        done = true;
+      }
       return true;
     }
     
@@ -453,6 +467,7 @@ class ISAM{
     }
 
     void run(Query q1, Query q2){
+      done = false;
       short lock = 0;
       short op1 = q1.operation;
       short op2 = q2.operation;
@@ -462,7 +477,7 @@ class ISAM{
       if(op1 == 3 || op2 == 3){ cout << "Query invalid" << endl; throw; }
       if(op_flag == 0){
         if(!strcmp(q1.key.c_str(), q2.key.c_str())) lock = 1;
-        if(!strcmp(lowest.key.c_str(), index[0].key)) lock = 2;
+        if(strcmp(lowest.key.c_str(), index[0].key) <= 0) lock = 2;
       }
       else{
         if(op_flag == 3) lock = 1;
@@ -473,12 +488,12 @@ class ISAM{
               qu2.join();
               return;
             };
-            if(!strcmp(lowest.key.c_str(), index[0].key)) lock = 2;
+            if(strcmp(lowest.key.c_str(), index[0].key) <= 0) lock = 2;
           }
           else{
             lock = 2;
             thread qu1(&ISAM::execute_query, this, q1, 0);
-            thread qu2(&ISAM::execute_query, this, q1, lock);
+            thread qu2(&ISAM::execute_query, this, q2, lock);
             qu1.join();
             qu2.join();
           }
