@@ -227,7 +227,8 @@ class ISAM{
       // load and parse csv
       std::ifstream Usuario(csv);
       string current;	
-      while(getline(Usuario, current)){
+
+      while (getline(Usuario, current)){
         string name, user, mail, pass; 
         stringstream ss(current);
 
@@ -251,7 +252,7 @@ class ISAM{
       vector<Register> records;
       for (auto i = 0; i < registers.size(); ++i){
         records.push_back(registers[i]);
-        if (records.size() == PAGE_SIZE || i >= registers.size()){
+        if (records.size() == PAGE_SIZE || !(i < registers.size()-1)){
           Page pageout(records);
           out.write((char*) &pageout, sizeof(pageout));
           records.clear();
@@ -487,7 +488,7 @@ class ISAM{
 
 int main(){
   ISAM ourISAM("Registro de Usuarios.dat", "Usuario.csv");
-  
+  /*
   auto result = ourISAM.search("Alexusis Fulton");
 
   ourISAM.erase("Kurt Nelson");
@@ -497,7 +498,7 @@ int main(){
   ourISAM.insert(Register("Athena Lloyd", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
   ourISAM.insert(Register("Aaron Carter", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
   ourISAM.erase("Rocco Nelson");
-
+*/
   ifstream if_datafile(ourISAM.getfileName(), ios::in | ios::binary);
   ifstream if_indexfile(ourISAM.getindexName(), ios::in | ios::binary);
   Page pag;
