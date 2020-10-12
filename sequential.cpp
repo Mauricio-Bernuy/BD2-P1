@@ -43,8 +43,8 @@ struct Register{
 
 vector<Register> registers;
 
-void load_data(){
-	std::ifstream Usuario("Usuario.csv");
+void load_data(string csv = "Usuario.csv"){
+	std::ifstream Usuario(csv);
 	
 	string current;	
 	while(getline(Usuario, current)){
@@ -85,8 +85,19 @@ class SequentialFile{
 private:
     string Name;
 public:
-    SequentialFile(string n):Name(n){};
-    
+    SequentialFile(){};
+    SequentialFile(string n, string csv = ""){
+       construct(n,csv);
+    };
+
+    void construct(string n, string csv = ""){
+        Name = n;
+        if ((!csv.empty()) && fileSize(n) == 0) {
+            load_data(csv);
+            insertAll(registers);
+        }
+    }
+
     vector<Register> load(){
         vector<Register> result;
         fstream if_datos(Name, ios::in | ios::binary);

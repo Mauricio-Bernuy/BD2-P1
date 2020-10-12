@@ -7,11 +7,13 @@
 #include <QDebug>
 #include <QTableWidget>
 
-#include "ISAM.cpp"
+
 //#include "sequential.cpp"
 
 bool Isam = false;
 bool Seq = false;
+
+enum TYPE {ISAM, SEQ};
 
 std::string filename;
 
@@ -35,7 +37,7 @@ MainWindow::~MainWindow()
 }
 
 
-void MainWindow::on_pushButton_3_clicked()
+void MainWindow::on_pushButton_3_clicked() // search
 {
     QString target = ui->target1->text();
     if (Isam){
@@ -43,6 +45,16 @@ void MainWindow::on_pushButton_3_clicked()
     } else {
         
     }
+
+    /*auto result = ourISAM.search("Alexusis Fulton");
+
+      ourISAM.erase("Kurt Nelson");
+
+      ourISAM.insert(Register("Roger Wilson", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
+      ourISAM.insert(Register("Kurt Nelson", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
+      ourISAM.insert(Register("Athena Lloyd", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
+      ourISAM.insert(Register("Aaron Carter", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
+      ourISAM.erase("Rocco Nelson");*/
 
 }
 
@@ -59,6 +71,8 @@ void MainWindow::on_pushButton_4_clicked()
 void MainWindow::on_pushButton_5_clicked()
 {
     QString target = ui->target3->text();
+
+
     if (Isam){
         
     } else {
@@ -66,8 +80,10 @@ void MainWindow::on_pushButton_5_clicked()
     }
 }
 
-void MainWindow::update_table_ISAM(){
-    ifstream if_datafile("testing.dat", ios::in | ios::binary);
+void MainWindow::update_table_ISAM()
+{
+    ui->tableWidget->setRowCount(0);
+    ifstream if_datafile("ISAM.dat", ios::in | ios::binary);
     //ifstream if_indexfile(ourISAM.getindexName(), ios::in | ios::binary);
 
     Page pag;
@@ -87,6 +103,7 @@ void MainWindow::update_table_ISAM(){
     }
 }
 
+
 void MainWindow::on_pushButton_clicked()
 {
     if (Seq){
@@ -95,7 +112,7 @@ void MainWindow::on_pushButton_clicked()
     }
     Isam = true;
 
-    ISAM ourISAM("testing.dat", "Usuario.csv");
+    ourISAM.construct("ISAM.dat", "Usuario.csv");
     update_table_ISAM();
 
 }
@@ -113,5 +130,5 @@ void MainWindow::on_pushButton_2_clicked()
 
 void MainWindow::on_pushButton_6_clicked()
 {
-    
+    update_table_ISAM();
 }

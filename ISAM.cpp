@@ -183,7 +183,6 @@ class ISAM{
     vector<Index> index = {}; // diccionario en memoria principal
 
   public:
-
     string getfileName() {return fileName;};
     string getindexName() {return indexName;};
 
@@ -195,17 +194,16 @@ class ISAM{
       in_idx.close();
     }
 
+    ISAM(){};
+
     ISAM(string _fileName, string csv = ""){
+      construct(_fileName, csv);
+    }
+
+    void construct(string _fileName, string csv = ""){
       fileName = _fileName;
       indexName = fileName.substr(0, fileName.length()-4) + "_index" + to_string(1) + ".dat";
-
-      /*fstream file(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
-      (file.is_open()) ? file.close() : throw("Unable to open files");*/
-      /*fstream file2(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
-      (file2.is_open()) ? file2.close() : throw("Unable to open files");*/ 
-
-      // later check for file errors
-      
+     
       if (fileSize(fileName) == 0 && !csv.empty()) csv2dat();
       if (fileSize(indexName) == 0) build_index();  
       loadIndex();
