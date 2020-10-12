@@ -7,11 +7,11 @@
 #include <QDebug>
 #include <QTableWidget>
 
-#include "ISAM.cpp"
-//#include "sequential.cpp"
-
 bool Isam = false;
 bool Seq = false;
+
+string ISAM_FILENAME = "ISAM_FILE.dat";
+string SEQUENTIAL_FILENAME = "SEQUENTIAL_FILE.dat";
 
 std::string filename;
 
@@ -20,8 +20,6 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    //Isam isam("Usuario.csv")
-    //Seq seq("Usuario.csv")
     QStringList header;
     header << "Name" << "User" << "Mail" << "Pass";
     ui->tableWidget->setColumnCount(4);
@@ -35,39 +33,104 @@ MainWindow::~MainWindow()
 }
 
 
-void MainWindow::on_pushButton_3_clicked()
+void MainWindow::on_pushButton_3_clicked() // search
 {
-    QString target = ui->target1->text();
-    if (Isam){
-        
-    } else {
-        
+    QString tg = ui->target1->text();
+    std::string target = tg.toStdString();
+
+    switch (STRUCTURE_TYPE){
+        case SEQUENTIAL:{
+            s_Register newReg;
+            newReg = ourSEQUENTIAL.search(target);
+            break;
+        }
+
+        case ISAM:{
+            PageLocation loc;
+            loc = ourISAM.search(target);
+            break;
+        }
+
+        default:
+            return;
     }
+
+    /*auto result = ourISAM.search("Alexusis Fulton");
+
+      ourISAM.erase("Kurt Nelson");
+
+      ourISAM.insert(Register("Roger Wilson", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
+      ourISAM.insert(Register("Kurt Nelson", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
+      ourISAM.insert(Register("Athena Lloyd", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
+      ourISAM.insert(Register("Aaron Carter", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
+      ourISAM.erase("Rocco Nelson");*/
 
 }
 
-void MainWindow::on_pushButton_4_clicked()
+void MainWindow::on_pushButton_4_clicked() //insert
 {
-    QString target = ui->target2->text();
-    if (Isam){
-        
-    } else {
-        
+    QString tg = ui->target2->text();
+    std::string target = tg.toStdString();
+    char name[30];
+    char user[30];
+    char mail[41];
+    char pass[12];
+    string nam, usr, ml, pss;
+    nam = nam.substr(0,29);
+    usr = usr.substr(0,29);
+    ml = ml.substr(0,40);
+    pss = pss.substr(0,11);
+    strcpy(name, (nam + string(30 - nam.length() ,' ')).c_str());
+    strcpy(user, (usr + string(30 - usr.length() ,' ')).c_str());
+    strcpy(mail, (ml + string(41 - ml.length() ,' ')).c_str());
+    strcpy(pass, (pss + string(12 - pss.length() ,' ')).c_str());
+
+    bool added;
+
+    switch (STRUCTURE_TYPE){
+        case SEQUENTIAL:{
+            ourSEQUENTIAL.add(s_Register(name, user, mail, pass));
+            break;
+        }
+
+        case ISAM:{
+            added = ourISAM.insert(Register(name, user, mail, pass));
+            break;
+        }
+
+        default:
+            return;
     }
 }
 
-void MainWindow::on_pushButton_5_clicked()
+void MainWindow::on_pushButton_5_clicked() //delete
 {
-    QString target = ui->target3->text();
-    if (Isam){
-        
-    } else {
-        
+    // QString target = ui->target3->text();
+
+    QString tg = ui->target2->text();
+    std::string target = tg.toStdString();
+    bool deleteded = false;
+
+    switch (STRUCTURE_TYPE){
+        case SEQUENTIAL:{
+            deleteded = ourSEQUENTIAL.delet(target);
+            break;
+        }
+
+        case ISAM:{
+            deleteded = ourISAM.erase(target);
+            break;
+        }
+
+        default:
+            return;
     }
 }
 
-void MainWindow::update_table_ISAM(){
-    ifstream if_datafile("testing.dat", ios::in | ios::binary);
+void MainWindow::update_table_ISAM()
+{
+    ui->tableWidget->setRowCount(0);
+    ifstream if_datafile(ISAM_FILENAME, ios::in | ios::binary);
     //ifstream if_indexfile(ourISAM.getindexName(), ios::in | ios::binary);
 
     Page pag;
@@ -87,31 +150,69 @@ void MainWindow::update_table_ISAM(){
     }
 }
 
-void MainWindow::on_pushButton_clicked()
+void MainWindow::update_table_SEQUENTIAL()
 {
-    if (Seq){
-        Seq = false;
-        Isam = true;
+    ui->tableWidget->setRowCount(0);
+
+    auto v = ourSEQUENTIAL.load();
+
+    for (auto i = 0; i < v.size(); ++i){
+        ui->tableWidget->insertRow(ui->tableWidget->rowCount());
+
+        ui->tableWidget->setItem
+                (ui->tableWidget->rowCount() - 1, 0, new QTableWidgetItem(QString::fromStdString(string(v[i].name).substr(0,30))));
+        ui->tableWidget->setItem
+                (ui->tableWidget->rowCount() - 1, 1, new QTableWidgetItem(QString::fromStdString(string(v[i].user).substr(0,30))));
+        ui->tableWidget->setItem
+                (ui->tableWidget->rowCount() - 1, 2, new QTableWidgetItem(QString::fromStdString(string(v[i].mail).substr(0,41))));
+        ui->tableWidget->setItem
+                (ui->tableWidget->rowCount() - 1, 3, new QTableWidgetItem(QString::fromStdString(string(v[i].pass).substr(0,12))));
     }
-    Isam = true;
+}
 
-    ISAM ourISAM("testing.dat", "Usuario.csv");
-    update_table_ISAM();
-
+void MainWindow::clear_files(){
+    fstream clr1(ISAM_FILENAME, ios::out | ios::trunc);
+    fstream clr2(ISAM_FILENAME.substr(0, ISAM_FILENAME.length()-4) + "_index" + to_string(1) + ".dat",ios::out | ios::trunc);
+    fstream clr3(SEQUENTIAL_FILENAME, ios::out | ios::trunc);
+    fstream clr4("auxil.dat", ios::out | ios::trunc);
+    clr1.close();
+    clr2.close();
+    clr3.close();
+    clr4.close();
 }
 
 
-
-void MainWindow::on_pushButton_2_clicked()
+void MainWindow::on_pushButton_clicked() // ISAM BUTTON
 {
-      if(Isam){
-          Seq = true;
-          Isam = false;
-      }
-      Seq = true;
+    clear_files();
+
+    STRUCTURE_TYPE = ISAM;
+    ourISAM.construct( ISAM_FILENAME , "Usuario.csv");
+    update_table_ISAM();
+}
+
+
+void MainWindow::on_pushButton_2_clicked() // SEQUENTIAL BUTTON
+{
+    clear_files();
+
+    STRUCTURE_TYPE = SEQUENTIAL;
+    ourSEQUENTIAL.construct(SEQUENTIAL_FILENAME, "Usuario.csv");
+    update_table_SEQUENTIAL();
 }
 
 void MainWindow::on_pushButton_6_clicked()
 {
-    
+    switch (STRUCTURE_TYPE){
+        case SEQUENTIAL:
+            update_table_SEQUENTIAL();
+            break;
+
+        case ISAM:
+            update_table_ISAM();
+            break;
+
+        default:
+            return;
+    }
 }

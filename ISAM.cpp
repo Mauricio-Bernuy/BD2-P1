@@ -1,4 +1,4 @@
-#include<iostream>
+#include <iostream>
 #include<string.h>
 #include<map>
 #include<fstream>
@@ -34,7 +34,12 @@ struct Register{
       cout << "Defined mail as " << mail << endl;
       cout << "Definned pass as " << pass << endl;
   }
-  Register(){};
+  Register(){
+     fill(begin(name), end(name), 0); // clear
+     fill(begin(user), end(user), 0); // clear
+     fill(begin(mail), end(mail), 0); // clear
+     fill(begin(pass), end(pass), 0); // clear
+  };
   void print(){
     cout << "------------------------------"<<endl;
     cout << "Nombre: " << name << endl;
@@ -52,7 +57,7 @@ struct Page{
   int first_empty; // pos of first empty in page, if PAGE_SIZE -> bucket full
 
   Page(){};
-  Page(vector<Register> in){
+  Page(vector<Register> in){   
     for (auto i = 0; i < in.size(); ++i)
       records[i] = in[i];
 
@@ -98,37 +103,37 @@ struct IndexLvl{
   Index indexes[INDEX_SIZE];
 };
 
-istream& operator>> (istream& stream, Register & record){
+inline istream& operator>> (istream& stream, Register & record){
   stream.read((char*) &record, sizeof(record));
   return stream;
 }
 
-ostream& operator<< (ostream& stream, Register & record){
+inline ostream& operator<< (ostream& stream, Register & record){
   stream.write((char*) &record, sizeof(record));
   return stream;
 }
 
-istream& operator>> (istream& stream, Index & record){
+inline istream& operator>> (istream& stream, Index & record){
   stream.read((char*) &record, sizeof(record));
   return stream;
 }
 
-ostream& operator<< (ostream& stream, Index & record){
+inline ostream& operator<< (ostream& stream, Index & record){
   stream.write((char*) &record, sizeof(record));
   return stream;
 }
 
-ostream& operator<< (ostream& stream, Page & page){
+inline ostream& operator<< (ostream& stream, Page & page){
   stream.write((char*) &page, sizeof(page));
   return stream;
 }
 
-istream& operator>> (istream& stream, Page & page){
+inline istream& operator>> (istream& stream, Page & page){
   stream.read((char*) &page, sizeof(page));
   return stream;
 }
 
-void sort(Register *arr, int low, int high, int mid){
+inline void sort(Register *arr, int low, int high, int mid){
   int i, j, k;
   Register c[high+1];
 	i = low;
@@ -161,7 +166,7 @@ void sort(Register *arr, int low, int high, int mid){
 	}
 }
 
-void MergeSort(Register* vec, int low, int high){
+inline void MergeSort(Register* vec, int low, int high){
   if(low < high){
     int temp = (low + high)/2;
     MergeSort(vec, low, temp);
@@ -170,11 +175,11 @@ void MergeSort(Register* vec, int low, int high){
   }
 }
 
-bool reg_nom_comp(Register a, Register b){
+inline bool reg_nom_comp(Register a, Register b){
     return string(a.name) < string(b.name);
 }
 
-streampos fileSize(string filename){
+inline streampos fileSize(string filename){
     streampos fsize = 0;
     ifstream file (filename, ios::binary);
 
@@ -194,7 +199,6 @@ class ISAM{
     bool done = false;
 
   public:
-
     string getfileName() {return fileName;};
     string getindexName() {return indexName;};
 
@@ -206,17 +210,16 @@ class ISAM{
       in_idx.close();
     }
 
+    ISAM(){};
+
     ISAM(string _fileName, string csv = ""){
+      construct(_fileName, csv);
+    }
+
+    void construct(string _fileName, string csv = ""){
       fileName = _fileName;
       indexName = fileName.substr(0, fileName.length()-4) + "_index" + to_string(1) + ".dat";
-
-      /*fstream file(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
-      (file.is_open()) ? file.close() : throw("Unable to open files");*/
-      /*fstream file2(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
-      (file2.is_open()) ? file2.close() : throw("Unable to open files");*/ 
-
-      // later check for file errors
-      
+     
       if (fileSize(fileName) == 0 && !csv.empty()) csv2dat();
       if (fileSize(indexName) == 0) build_index();  
       loadIndex();
@@ -509,7 +512,7 @@ class ISAM{
     }
 };
 
-int main(){
+/*int main(){
   ISAM ourISAM("Registro de Usuarios.dat", "Usuario.csv");
  /* Query q1;
   Query q2;
@@ -554,3 +557,4 @@ int main(){
   */
   cout<<"done!\n";
 }
+*/

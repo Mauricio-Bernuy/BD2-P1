@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -18,7 +19,7 @@ struct pos{
     pos(int p, file_sel f):posit(p),file(f){}
 };
 
-struct Register{
+struct s_Register{
     char name[30];
     char user[30];
     char mail[41];
@@ -28,8 +29,8 @@ struct Register{
     file_sel file = d;
     bool deleted = false;
 
-    Register(){};
-    Register(string nam, string usr, string ml, string pss){
+    s_Register(){};
+    s_Register(string nam, string usr, string ml, string pss){
         nam = nam.substr(0,29);
         usr = usr.substr(0,29);
         ml = ml.substr(0,40); 
@@ -41,10 +42,10 @@ struct Register{
     }
 };
 
-vector<Register> registers;
+inline vector<s_Register> registers;
 
-void load_data(){
-	std::ifstream Usuario("Usuario.csv");
+inline void load_data(string csv = "Usuario.csv"){
+	std::ifstream Usuario(csv);
 	
 	string current;	
 	while(getline(Usuario, current)){
@@ -60,16 +61,16 @@ void load_data(){
         getline(ss, current, ',');
         pass = current;
 
-        Register temp(name, user, mail, pass);
+        s_Register temp(name, user, mail, pass);
 		registers.push_back(temp);
 	}
 }
 
-bool reg_nom_comp(Register a, Register b){
+inline bool s_reg_nom_comp(s_Register a, s_Register b){
     return string(a.name) < string(b.name);
 }
 
-streampos fileSize(string filename){
+inline streampos s_fileSize(string filename){
     streampos fsize = 0;
     ifstream file (filename, ios::binary);
 
@@ -85,18 +86,29 @@ class SequentialFile{
 private:
     string Name;
 public:
-    SequentialFile(string n):Name(n){};
-    
-    vector<Register> load(){
-        vector<Register> result;
+    SequentialFile(){};
+    SequentialFile(string n, string csv = ""){
+       construct(n,csv);
+    };
+
+    void construct(string n, string csv = ""){
+        Name = n;
+        if ((!csv.empty()) && s_fileSize(n) == 0) {
+            load_data(csv);
+            insertAll(registers);
+        }
+    }
+
+    vector<s_Register> load(){
+        vector<s_Register> result;
         fstream if_datos(Name, ios::in | ios::binary);
         fstream if_aux("auxil.dat", ios::in | ios::binary);
-        Register tmp;
+        s_Register tmp;
         int next_pos = 0;
         file_sel next_coord;
-        if (fileSize(Name) <= 0){
+        if (s_fileSize(Name) <= 0){
             next_coord = a;
-            if (fileSize("auxil.dat") <= 0)
+            if (s_fileSize("auxil.dat") <= 0)
                 return result;
         }
         else
@@ -125,26 +137,26 @@ public:
         return result;
     }
 
-    void insertAll(vector<Register> registros){
-        sort(registros.begin(),registros.end(),reg_nom_comp);
+    void insertAll(vector<s_Register> registros){
+        sort(registros.begin(),registros.end(),s_reg_nom_comp);
 
         for (auto i = registros.begin(); i != registros.end(); ++i){
             add(*i);
         }
     }
 
-    pos getprev(Register record){
+    pos getprev(s_Register record){
         ifstream if_datos(Name, ios::in | ios::binary);
         ifstream if_aux("auxil.dat", ios::in | ios::binary);
 
-        Register tmp;
+        s_Register tmp;
         int nx_ptr = 0;
         file_sel nx_file;
         pos prev;
         
-        if (fileSize(Name) <= 0){
+        if (s_fileSize(Name) <= 0){
             nx_file = a;
-            if (fileSize("auxil.dat") <= 0)
+            if (s_fileSize("auxil.dat") <= 0)
                 return prev;
         }
         else
@@ -164,7 +176,7 @@ public:
             if (!(if_datos.good() || if_aux.good()) ) 
                 break;
 
-            if (reg_nom_comp(tmp, record)){
+            if (s_reg_nom_comp(tmp, record)){
                 prev.posit = nx_ptr;
                 prev.file = nx_file;
             } else break;
@@ -178,17 +190,17 @@ public:
         return prev;
     }
 
-    pos getnext(Register record){
+    pos getnext(s_Register record){
         ifstream if_datos(Name, ios::in | ios::binary);
         ifstream if_aux("auxil.dat", ios::in | ios::binary);
 
-        Register tmp;
+        s_Register tmp;
         int nx_ptr = 0;
         file_sel nx_file;
         pos next;
-        if (fileSize(Name) <= 0){
+        if (s_fileSize(Name) <= 0){
             nx_file = a;
-            if (fileSize("auxil.dat") <= 0)
+            if (s_fileSize("auxil.dat") <= 0)
                 return next;
         }
         else
@@ -207,7 +219,7 @@ public:
             if (!(if_datos.good() || if_aux.good())) 
                 break;
 
-            if (!reg_nom_comp(tmp, record)){
+            if (!s_reg_nom_comp(tmp, record)){
                 next.posit = nx_ptr;
                 next.file = nx_file;
                 break;
@@ -222,8 +234,8 @@ public:
         return next;
     }
 
-    Register search(string key){
-        Register result;
+    s_Register search(string key){
+        s_Register result;
 
         int pos = searchpos(key);
 
@@ -241,7 +253,7 @@ public:
         key = key.substr(0,29);
         key = key + string(30 - key.length() ,' ');
 
-        Register tmp;
+        s_Register tmp;
 
         fstream ofs;
         ofs.open("auxil.dat", ios::out | ios::app | ios::binary);
@@ -254,7 +266,7 @@ public:
         ofs.close();
 
         int l = 0;
-        int u = fileSize(Name)/sizeof(tmp)-1;
+        int u = s_fileSize(Name)/sizeof(tmp)-1;
 
         while (u >= l){
             int m = (u + l)/2;
@@ -281,9 +293,9 @@ public:
     }
 
     void merge(){
-        Register tmp;
+        s_Register tmp;
         auto x = load();
-        sort(x.begin(), x.end(), reg_nom_comp);
+        sort(x.begin(), x.end(), s_reg_nom_comp);
         int next_ptr = 1;
         for (auto i = x.begin(); i != x.end(); ++i){
             i->pos = sizeof(tmp)*(next_ptr++);
@@ -305,8 +317,8 @@ public:
         ofs.close();
     }
 
-    void add(Register record){
-        Register tmp;
+    void add(s_Register record){
+        s_Register tmp;
         fstream ofs;
         
         ofs.open("auxil.dat", ios::out | ios::app | ios::binary);
@@ -351,7 +363,7 @@ public:
     }   
 
     bool delet(string key){
-        Register tmp, prevreg;
+        s_Register tmp, prevreg;
 
         int position = searchpos(key);
         if (position == -1) return false;
@@ -391,23 +403,9 @@ public:
     }    
 };
 
-
+/*
 int main(){
-    /*Register test1("0001","telberto","industrial",2);
-    Register test2("0002","alborto","economia",1);  
-    Register test3("0003","elborarto","economia",1);        
-    Register test4("0004","floborto","economia",1);    
-    Register test5("0005","alimorto","economia",1);    
-    Register test6("0006","belelmorto","economia",1); 
-    vector<Register> lol;
-    lol.push_back(test1);
-    lol.push_back(test2);
-    lol.push_back(test3);
-    lol.push_back(test4);
-    lol.push_back(test5);
-    lol.push_back(test6);*/
 
-    load_data();
 
     SequentialFile asj("data.dat");
     asj.insertAll(registers);
@@ -419,3 +417,4 @@ int main(){
     s = asj.search("Gina Connor");
     cout<<"done!\n";
 }
+*/
