@@ -48,7 +48,7 @@ struct Register{
 struct Page{
   Register records[PAGE_SIZE];
   
-  long next_bucket; // if filled, will point to next bucket
+  long next_bucket; // if filled, will point to next bucket 
   int first_empty; // pos of first empty in page, if PAGE_SIZE -> bucket full
 
   Page(){};
