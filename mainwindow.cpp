@@ -7,7 +7,7 @@
 #include <QDebug>
 #include <QTableWidget>
 
-
+#include "ISAM.cpp"
 //#include "sequential.cpp"
 
 bool Isam = false;
@@ -39,11 +39,16 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_3_clicked() // search
 {
-    QString target = ui->target1->text();
+    QString tg = ui->target1->text();
+    std::string target = tg.toStdString();
     if (Isam){
-        
+        PageLocation loc;
+        loc = ourISAM.search(target);
+
     } else {
-        
+        Register newReg;
+        //newReg = ourSequential.search(target);
+
     }
 
     /*auto result = ourISAM.search("Alexusis Fulton");
@@ -58,25 +63,44 @@ void MainWindow::on_pushButton_3_clicked() // search
 
 }
 
-void MainWindow::on_pushButton_4_clicked()
+void MainWindow::on_pushButton_4_clicked() //insert
 {
-    QString target = ui->target2->text();
+    QString tg = ui->target2->text();
+    std::string target = tg.toStdString();
+    char name[30];
+    char user[30];
+    char mail[41];
+    char pass[12];
+    string nam, usr, ml, pss;
+    nam = nam.substr(0,29);
+    usr = usr.substr(0,29);
+    ml = ml.substr(0,40);
+    pss = pss.substr(0,11);
+    strcpy(name, (nam + string(30 - nam.length() ,' ')).c_str());
+    strcpy(user, (usr + string(30 - usr.length() ,' ')).c_str());
+    strcpy(mail, (ml + string(41 - ml.length() ,' ')).c_str());
+    strcpy(pass, (pss + string(12 - pss.length() ,' ')).c_str());
+
+    Register reg = Register(name, user, mail, pass);
+    bool added;
     if (Isam){
-        
+        added = ourISAM.insert(reg);
     } else {
-        
+        return;
+        //added = ourSequential.add(reg);
     }
 }
 
-void MainWindow::on_pushButton_5_clicked()
+void MainWindow::on_pushButton_5_clicked() //delete
 {
-    QString target = ui->target3->text();
-
-
+    QString tg = ui->target2->text();
+    std::string target = tg.toStdString();
+    bool deleteded = false;
     if (Isam){
-        
+        deleteded = ourISAM.erase(target);
     } else {
-        
+        return;
+        //deleteded = ourSequential.delet(target);
     }
 }
 

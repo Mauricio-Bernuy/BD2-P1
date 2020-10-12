@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "ISAM.cpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -12,6 +13,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    ISAM ourISAM;
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
