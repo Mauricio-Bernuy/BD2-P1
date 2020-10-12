@@ -512,7 +512,7 @@ class ISAM{
     }
 };
 
-/*int main(){
+int main(){
   ISAM ourISAM("Registro de Usuarios.dat", "Usuario.csv");
  /* Query q1;
   Query q2;
@@ -541,7 +541,8 @@ class ISAM{
   ourISAM.insert(Register("Aaron Carter", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"), 0);
   cout << "5" << endl;
   ourISAM.erase("Rocco Nelson", 0);
-/*
+
+
   ifstream if_datafile(ourISAM.getfileName(), ios::in | ios::binary);
   ifstream if_indexfile(ourISAM.getindexName(), ios::in | ios::binary);
   Page pag;
@@ -554,7 +555,6 @@ class ISAM{
   
   while(if_indexfile >> ind)
     ind_res.push_back(ind);
-  */
+    
   cout<<"done!\n";
 }
-*/
