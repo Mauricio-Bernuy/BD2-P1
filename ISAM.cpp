@@ -277,7 +277,8 @@ class ISAM{
       }
     }
 
-    PageLocation search(string key){
+    PageLocation search(string key, short lock){
+      cout << "In search with key" << key << "and lock " << lock<< endl;
       PageLocation empty, first_free;
       Register reg_empty;
 
@@ -287,13 +288,16 @@ class ISAM{
       int l = 0;
       int u = index.size()-1;
 
+      cout << "flag1" << endl;
       if (key < index[0].key){   
         Page paged;  
         long address = 0;
         datafile.seekg(address);
         datafile >> paged;
+        cout << "flag2" << endl;
 
         while (paged.next_bucket != -1){
+          cout << "flag3" << endl;
           address = paged.next_bucket;
           datafile.seekg(address);
           datafile >> paged;
@@ -302,7 +306,7 @@ class ISAM{
         PageLocation less(reg_empty, address, -2, false);
         return less;
       }
-
+      cout << "flaag" << endl;
       while (u >= l){
         temp = (l+u)/2;
         if (key < index[temp].key) u = temp - 1;
@@ -356,13 +360,14 @@ class ISAM{
       }
     }
 
-    bool erase(string key){
+    bool erase(string key, short lock){
+      cout << "In delete with key " << key<< "and lock " << lock << endl;
       PageLocation p;
 
       fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::binary);
       if(!datafile.is_open()) throw("Unable to open files");
 
-      p = search(key);
+      p = search(key, lock);
       if(!p.exists) return false;
       if (p.address != -1 && p.index != -1){
           datafile.seekg(p.address);
@@ -380,10 +385,11 @@ class ISAM{
       return false;
     }
 
-    bool insert(Register reg){
+    bool insert(Register reg, short lock){
+      cout << "In insert with reg" << endl;
       fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::binary);
       if(!datafile.is_open()) throw("Unable to open files");
-      PageLocation p = search(reg.name);
+      PageLocation p = search(reg.name, lock);
       if (p.exists) return false;
 
       datafile.seekg(p.address);
@@ -425,18 +431,19 @@ class ISAM{
     }
     
     void execute_query(Query query, short lock){
+      PageLocation pg;
       switch(query.operation){
-        case 0:
+        case 2:
           //search
-          PageLocation pg = search(query.key, lock);
-        case 1:
+          pg = search(query.key, lock);
+        case -2:
           //insert
           if (insert(query.reg, lock)) cout << "Inserted!" << endl;
           else cout << "Insertion invalid" << endl;
           break;
-        case 2:
+        case 1:
           //delete
-          if (erase(query.reg, lock)) cout << "Erased!" << endl;
+          if (erase(query.key, lock)) cout << "Erased!" << endl;
           else cout << "Erase invalid" << endl;
           break;
         default:
@@ -445,7 +452,7 @@ class ISAM{
       }
     }
 
-    void order(Query q1, Query q2){
+    void run(Query q1, Query q2){
       short lock = 0;
       short op1 = q1.operation;
       short op2 = q2.operation;
@@ -454,51 +461,67 @@ class ISAM{
       Query biggest = (op1 > op2) ? q2 : q1;
       if(op1 == 3 || op2 == 3){ cout << "Query invalid" << endl; throw; }
       if(op_flag == 0){
-        if(!strcmp(q1.key == q2.key)) lock = 1;
-        if(!strcmp(lowest.key, index[0].key)) lock = 2;
+        if(!strcmp(q1.key.c_str(), q2.key.c_str())) lock = 1;
+        if(!strcmp(lowest.key.c_str(), index[0].key)) lock = 2;
       }
       else{
         if(op_flag == 3) lock = 1;
         else{
           if(op_flag != -1) {
-            if(!strcmp(q1.key == q2.key)){
-              pthread_t qu2(execute_query, q1, lock);
+            if(!strcmp(q1.key.c_str(), q2.key.c_str())){
+              thread qu2(&ISAM::execute_query, this, q1, lock);
               qu2.join();
               return;
             };
-            if(!strcmp(lowest.key, index[0].key)) lock = 2;
-          };
+            if(!strcmp(lowest.key.c_str(), index[0].key)) lock = 2;
+          }
           else{
             lock = 2;
-            pthread_t qu1(execute_query, q1, 0);
-            pthread_t qu2(execute_query, q2, lock);
+            thread qu1(&ISAM::execute_query, this, q1, 0);
+            thread qu2(&ISAM::execute_query, this, q1, lock);
             qu1.join();
             qu2.join();
           }
         }
       }
-      pthread_t qu1(execute_query, lowest, 0);
-      pthread_t qu2(execute_query, biggest, lock);
+      thread qu1(&ISAM::execute_query, this, lowest, 0);
+      thread qu2(&ISAM::execute_query, this, biggest, lock);
       qu1.join();
       qu2.join();
       return;
     }
-
 };
 
 int main(){
   ISAM ourISAM("Registro de Usuarios.dat", "Usuario.csv");
-  /*
-  auto result = ourISAM.search("Alexusis Fulton");
+ /* Query q1;
+  Query q2;
+  Query q3;
+  Register reg1("Roger Wilson", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2");
+  q1.operation = -2;
+  q1.reg = reg1;
 
-  ourISAM.erase("Kurt Nelson");
+  q3.operation = 2;
+  q3.key = "Roger Wilson";
 
-  ourISAM.insert(Register("Roger Wilson", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
-  ourISAM.insert(Register("Kurt Nelson", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
-  ourISAM.insert(Register("Athena Lloyd", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
-  ourISAM.insert(Register("Aaron Carter", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
-  ourISAM.erase("Rocco Nelson");
-*/
+  q2.operation = 1;
+  q2.key = "Roger Wilson";
+
+  ourISAM.run(q1, q2);*/
+  auto result = ourISAM.search("Alexusis Fulton", 0);
+  cout << "1" << endl;
+  //ourISAM.erase("Kurt Nelson", 0);
+
+  ourISAM.insert(Register("Roger Wilson", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"), 0);
+  cout << "2" << endl;
+  ourISAM.insert(Register("Kurt Nelson", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"), 0);
+  cout << "3" << endl;
+  ourISAM.insert(Register("Athena Lloyd", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"), 0);
+  cout << "4" << endl;
+  ourISAM.insert(Register("Aaron Carter", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"), 0);
+  cout << "5" << endl;
+  ourISAM.erase("Rocco Nelson", 0);
+/*
   ifstream if_datafile(ourISAM.getfileName(), ios::in | ios::binary);
   ifstream if_indexfile(ourISAM.getindexName(), ios::in | ios::binary);
   Page pag;
@@ -511,6 +534,6 @@ int main(){
   
   while(if_indexfile >> ind)
     ind_res.push_back(ind);
-  
+  */
   cout<<"done!\n";
 }
