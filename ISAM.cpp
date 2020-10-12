@@ -416,5 +416,40 @@ class ISAM{
 
       return true;
     }
+<<<<<<< HEAD
 
 };
+=======
+    
+};
+/*
+
+int main(){
+  ISAM ourISAM("Registro de Usuarios.dat", "Usuario.csv");
+  auto result = ourISAM.search("Alexusis Fulton");
+
+  ourISAM.erase("Kurt Nelson");
+
+  ourISAM.insert(Register("Roger Wilson", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
+  ourISAM.insert(Register("Kurt Nelson", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
+  ourISAM.insert(Register("Athena Lloyd", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
+  ourISAM.insert(Register("Aaron Carter", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
+  ourISAM.erase("Rocco Nelson");
+
+  ifstream if_datafile(ourISAM.getfileName(), ios::in | ios::binary);
+  ifstream if_indexfile(ourISAM.getindexName(), ios::in | ios::binary);
+  Page pag;
+  vector<Page> pag_res;
+  Index ind;
+  vector<Index> ind_res;
+
+  while(if_datafile >> pag)
+    pag_res.push_back(pag);
+  
+  while(if_indexfile >> ind)
+    ind_res.push_back(ind);
+  
+  cout<<"done!\n";
+}
+*/
+>>>>>>> 395fd7fafb772353486bbcac42eb5b6567035c4e
