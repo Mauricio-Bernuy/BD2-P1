@@ -42,12 +42,20 @@ void MainWindow::on_pushButton_3_clicked() // search
         case SEQUENTIAL:{
             s_Register newReg;
             newReg = ourSEQUENTIAL.search(target);
+            QString accesses = "Secondary Memory Accesses: " +
+                    QString::fromStdString(to_string(ourSEQUENTIAL.mem_access_counter_AUX + ourSEQUENTIAL.mem_access_counter_DATA));
+            ui->Accesses->setText(accesses);
+            update_table_SEQUENTIAL();
             break;
         }
 
         case ISAM:{
             PageLocation loc;
             loc = ourISAM.search(target);
+            QString accesses = "Secondary Memory Accesses: " +
+                    QString::fromStdString(to_string(ourISAM.mem_access_counter_INDEX + ourISAM.mem_access_counter_DATA));
+            ui->Accesses->setText(accesses);
+            update_table_ISAM();
             break;
         }
 
@@ -76,25 +84,40 @@ void MainWindow::on_pushButton_4_clicked() //insert
     char mail[41];
     char pass[12];
     string nam, usr, ml, pss;
-    nam = nam.substr(0,29);
-    usr = usr.substr(0,29);
-    ml = ml.substr(0,40);
-    pss = pss.substr(0,11);
-    strcpy(name, (nam + string(30 - nam.length() ,' ')).c_str());
-    strcpy(user, (usr + string(30 - usr.length() ,' ')).c_str());
-    strcpy(mail, (ml + string(41 - ml.length() ,' ')).c_str());
-    strcpy(pass, (pss + string(12 - pss.length() ,' ')).c_str());
+    stringstream ss(target);
+    getline(ss, nam, ',');
+    getline(ss, usr, ',');
+    getline(ss, ml, ',');
+    getline(ss, pss, ',');
+    nam = nam.substr(0,30);
+    usr = usr.substr(0,30);
+    ml = ml.substr(0,41);
+    pss = pss.substr(0,12);
+    strcpy(name, nam.c_str());
+    strcpy(user, usr.c_str());
+    strcpy(mail, ml.c_str());
+    strcpy(pass, pss.c_str());
+
+    if (string(name) == "") return;
 
     bool added;
 
     switch (STRUCTURE_TYPE){
         case SEQUENTIAL:{
             ourSEQUENTIAL.add(s_Register(name, user, mail, pass));
+            QString accesses = "Secondary Memory Accesses: " +
+                    QString::fromStdString(to_string(ourSEQUENTIAL.mem_access_counter_AUX + ourSEQUENTIAL.mem_access_counter_DATA));
+            ui->Accesses->setText(accesses);
+            update_table_SEQUENTIAL();
             break;
         }
 
         case ISAM:{
             added = ourISAM.insert(Register(name, user, mail, pass));
+            QString accesses = "Secondary Memory Accesses: " +
+                    QString::fromStdString(to_string(ourISAM.mem_access_counter_INDEX + ourISAM.mem_access_counter_DATA));
+            ui->Accesses->setText(accesses);
+            update_table_ISAM();
             break;
         }
 
@@ -107,18 +130,26 @@ void MainWindow::on_pushButton_5_clicked() //delete
 {
     // QString target = ui->target3->text();
 
-    QString tg = ui->target2->text();
+    QString tg = ui->target3->text();
     std::string target = tg.toStdString();
     bool deleteded = false;
 
     switch (STRUCTURE_TYPE){
         case SEQUENTIAL:{
             deleteded = ourSEQUENTIAL.delet(target);
+            QString accesses = "Secondary Memory Accesses: " +
+                    QString::fromStdString(to_string(ourSEQUENTIAL.mem_access_counter_AUX + ourSEQUENTIAL.mem_access_counter_DATA));
+            ui->Accesses->setText(accesses);
+            update_table_SEQUENTIAL();
             break;
         }
 
         case ISAM:{
             deleteded = ourISAM.erase(target);
+            QString accesses = "Secondary Memory Accesses: " +
+                    QString::fromStdString(to_string(ourISAM.mem_access_counter_INDEX + ourISAM.mem_access_counter_DATA));
+            ui->Accesses->setText(accesses);
+            update_table_ISAM();
             break;
         }
 
@@ -188,6 +219,8 @@ void MainWindow::on_pushButton_clicked() // ISAM BUTTON
 
     STRUCTURE_TYPE = ISAM;
     ourISAM.construct( ISAM_FILENAME , "Usuario.csv");
+    QString accesses = "Secondary Memory Accesses: " + QString::fromStdString(to_string(ourISAM.mem_access_counter_INDEX + ourISAM.mem_access_counter_DATA));
+    ui->Accesses->setText(accesses);
     update_table_ISAM();
 }
 
@@ -198,10 +231,12 @@ void MainWindow::on_pushButton_2_clicked() // SEQUENTIAL BUTTON
 
     STRUCTURE_TYPE = SEQUENTIAL;
     ourSEQUENTIAL.construct(SEQUENTIAL_FILENAME, "Usuario.csv");
+    QString accesses = "Secondary Memory Accesses: " + QString::fromStdString(to_string(ourSEQUENTIAL.mem_access_counter_AUX + ourSEQUENTIAL.mem_access_counter_DATA));
+    ui->Accesses->setText(accesses);
     update_table_SEQUENTIAL();
 }
 
-void MainWindow::on_pushButton_6_clicked()
+void MainWindow::on_pushButton_6_clicked() // REFRESH
 {
     switch (STRUCTURE_TYPE){
         case SEQUENTIAL:

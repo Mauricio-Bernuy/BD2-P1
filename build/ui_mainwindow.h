@@ -13,6 +13,7 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QHeaderView>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenuBar>
@@ -43,6 +44,9 @@ public:
     QPushButton *pushButton_5;
     QLineEdit *target3;
     QTableWidget *tableWidget;
+    QLabel *Accesses;
+    QTableWidget *tableWidget_2;
+    QLabel *text1;
     QMenuBar *menubar;
     QStatusBar *statusbar;
 
@@ -50,7 +54,7 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QString::fromUtf8("MainWindow"));
-        MainWindow->resize(739, 637);
+        MainWindow->resize(887, 625);
         MainWindow->setAutoFillBackground(false);
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
@@ -80,6 +84,7 @@ public:
 
         target1 = new QLineEdit(layoutWidget);
         target1->setObjectName(QString::fromUtf8("target1"));
+        target1->setPlaceholderText(QString::fromUtf8("name to search"));
 
         verticalLayout->addWidget(target1);
 
@@ -134,11 +139,22 @@ public:
 
         tableWidget = new QTableWidget(centralwidget);
         tableWidget->setObjectName(QString::fromUtf8("tableWidget"));
-        tableWidget->setGeometry(QRect(40, 190, 671, 261));
+        tableWidget->setGeometry(QRect(30, 190, 471, 261));
+        tableWidget->setAutoFillBackground(false);
+        Accesses = new QLabel(centralwidget);
+        Accesses->setObjectName(QString::fromUtf8("Accesses"));
+        Accesses->setGeometry(QRect(270, 470, 321, 31));
+        tableWidget_2 = new QTableWidget(centralwidget);
+        tableWidget_2->setObjectName(QString::fromUtf8("tableWidget_2"));
+        tableWidget_2->setGeometry(QRect(540, 240, 271, 61));
+        tableWidget_2->setAutoFillBackground(false);
+        text1 = new QLabel(centralwidget);
+        text1->setObjectName(QString::fromUtf8("text1"));
+        text1->setGeometry(QRect(540, 200, 341, 41));
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName(QString::fromUtf8("menubar"));
-        menubar->setGeometry(QRect(0, 0, 739, 20));
+        menubar->setGeometry(QRect(0, 0, 887, 20));
         MainWindow->setMenuBar(menubar);
         statusbar = new QStatusBar(MainWindow);
         statusbar->setObjectName(QString::fromUtf8("statusbar"));
@@ -155,10 +171,15 @@ public:
         pushButton->setText(QCoreApplication::translate("MainWindow", "ISAM", nullptr));
         pushButton_2->setText(QCoreApplication::translate("MainWindow", "Sequential", nullptr));
         pushButton_6->setText(QCoreApplication::translate("MainWindow", "Refresh", nullptr));
-        pushButton_3->setText(QCoreApplication::translate("MainWindow", "B\303\272squeda", nullptr));
+        pushButton_3->setText(QCoreApplication::translate("MainWindow", "Search", nullptr));
         target1->setText(QString());
         pushButton_4->setText(QCoreApplication::translate("MainWindow", "Insert", nullptr));
+        target2->setPlaceholderText(QCoreApplication::translate("MainWindow", "name,user,mail,pass", nullptr));
         pushButton_5->setText(QCoreApplication::translate("MainWindow", "Delete", nullptr));
+        target3->setText(QString());
+        target3->setPlaceholderText(QCoreApplication::translate("MainWindow", "name to delete", nullptr));
+        Accesses->setText(QString());
+        text1->setText(QCoreApplication::translate("MainWindow", "Result: ", nullptr));
     } // retranslateUi
 
 };

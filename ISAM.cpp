@@ -188,14 +188,18 @@ class ISAM{
     vector<Index> index = {}; // diccionario en memoria principal
 
   public:
+    int mem_access_counter_INDEX, mem_access_counter_DATA = 0;
+
     string getfileName() {return fileName;};
     string getindexName() {return indexName;};
 
     void loadIndex(){ // TO DO -> array of levels 
+
       Index idx;
       ifstream in_idx(indexName, ios::binary); if (!in_idx.is_open()) return;
-      while(in_idx >> idx)
+      while(in_idx >> idx){ {mem_access_counter_INDEX++;}
         index.push_back(idx);
+      }
       in_idx.close();
     }
 
@@ -206,12 +210,16 @@ class ISAM{
     }
 
     void construct(string _fileName, string csv = ""){
+      mem_access_counter_INDEX = 0;
+      mem_access_counter_DATA = 0;
+      
       fileName = _fileName;
       indexName = fileName.substr(0, fileName.length()-4) + "_index" + to_string(1) + ".dat";
      
       if (fileSize(fileName) == 0 && !csv.empty()) csv2dat();
       if (fileSize(indexName) == 0) build_index();  
       loadIndex();
+      cout << "Index Accesses: " << mem_access_counter_INDEX << "\n Data Accesses: " << mem_access_counter_DATA << "\n";
     }
 
     ~ISAM(){}
@@ -223,7 +231,8 @@ class ISAM{
       std::ifstream Usuario(csv);
       string current;	
 
-      while (getline(Usuario, current)){
+      while (getline(Usuario, current)){ {mem_access_counter_DATA++;}
+
         string name, user, mail, pass; 
         stringstream ss(current);
 
@@ -249,7 +258,7 @@ class ISAM{
         records.push_back(registers[i]);
         if (records.size() == PAGE_SIZE || !(i < registers.size()-1)){
           Page pageout(records);
-          out.write((char*) &pageout, sizeof(pageout));
+          out.write((char*) &pageout, sizeof(pageout)); {mem_access_counter_DATA++;}
           records.clear();
         }
       }
@@ -258,7 +267,6 @@ class ISAM{
 
     void build_index(int levels = INDEX_LEVELS){
       int level = 1;
-
       ifstream data(fileName, ios::binary);
       ofstream out(indexName, ios::app | ios::binary);
 
@@ -267,12 +275,14 @@ class ISAM{
 
       while(data >> tmp){
         Index idx((i * sizeof(tmp)), tmp.getkey().c_str());
-        out << idx;
+        out << idx; {mem_access_counter_INDEX++;}
         i++;
       }
     }
 
     PageLocation search(string key){
+      mem_access_counter_INDEX = 0;
+      mem_access_counter_DATA = 0;
       PageLocation empty, first_free;
       Register reg_empty;
 
@@ -286,16 +296,16 @@ class ISAM{
         Page paged;  
         long address = 0;
         datafile.seekg(address);
-        datafile >> paged;
+        datafile >> paged; {mem_access_counter_DATA++;}
 
-        while (paged.next_bucket != -1){
+        while (paged.next_bucket != -1){ 
           address = paged.next_bucket;
           datafile.seekg(address);
-          datafile >> paged;
+          datafile >> paged; {mem_access_counter_DATA++;}
         }
         
         PageLocation less(reg_empty, address, -2, false);
-        return less;
+        return less; 
       }
 
       while (u >= l){
@@ -318,7 +328,7 @@ class ISAM{
       datafile.seekg(address);
 
       Page curr_page;
-      datafile >> curr_page;
+      datafile >> curr_page; {mem_access_counter_DATA++;}
       auto iterator = curr_page;
       bool found_first = false;
       while (1){
@@ -340,7 +350,7 @@ class ISAM{
         if (iterator.next_bucket != -1){
           address = iterator.next_bucket;
           datafile.seekg(iterator.next_bucket);
-          datafile >> iterator;
+          datafile >> iterator; {mem_access_counter_DATA++;}
           
         } else {
           cout << "Unable to locate key" << endl;
@@ -352,9 +362,12 @@ class ISAM{
     }
 
     bool erase(string key){
+      mem_access_counter_INDEX = 0;
+      mem_access_counter_DATA = 0;
+
       PageLocation p;
 
-      fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::binary);
+      fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::binary); 
       if(!datafile.is_open()) throw("Unable to open files");
 
       p = search(key);
@@ -362,13 +375,14 @@ class ISAM{
       if (p.address != -1 && p.index != -1){
           datafile.seekg(p.address);
           Page pag;
-          datafile >> pag;
+          datafile >> pag; {mem_access_counter_DATA++;}
           pag.records[p.index] = pag.records[pag.first_empty -1];
           pag.first_empty--;
           MergeSort(pag.records, 0, pag.first_empty - 1);
           datafile.seekp(p.address);
-          datafile << pag;
+          datafile << pag; {mem_access_counter_DATA++;}
           datafile.close();
+          cout<<"Successfully deleted " << key << '\n';
           return true;
           
       } else throw ("Unable to locate register");
@@ -376,6 +390,9 @@ class ISAM{
     }
 
     bool insert(Register reg){
+      mem_access_counter_INDEX = 0;
+      mem_access_counter_DATA = 0;
+
       fstream datafile(fileName, ios::out | ios::in | ios::ate | ios::binary);
       if(!datafile.is_open()) throw("Unable to open files");
       PageLocation p = search(reg.name);
@@ -383,14 +400,14 @@ class ISAM{
 
       datafile.seekg(p.address);
       Page pag;
-      datafile >> pag;
+      datafile >> pag; {mem_access_counter_DATA++;}
 
       if (p.index == -2){ //if smaller than first
         strcpy(index[0].key, reg.name);
         // rewrite to index
         fstream indexfile(indexName, ios::out | ios::in | ios::ate | ios::binary);
         indexfile.seekp(0);
-        indexfile << index[0];
+        indexfile << index[0]; {mem_access_counter_INDEX++;}
         indexfile.close();
         p.index = pag.first_empty;
       }
@@ -399,7 +416,7 @@ class ISAM{
         datafile.seekp(0, ios::end);
         pag.next_bucket = datafile.tellp();
         datafile.seekp(p.address);
-        datafile << pag;
+        datafile << pag; {mem_access_counter_DATA++;}
 
         p.address = pag.next_bucket;
         p.index = 0;
@@ -413,7 +430,7 @@ class ISAM{
       pag.first_empty++;
       MergeSort(pag.records, 0, pag.first_empty - 1);
       datafile.seekp(p.address);
-      datafile << pag;
+      datafile << pag; {mem_access_counter_DATA++;}
       datafile.close();
 
       return true;
