@@ -1,10 +1,11 @@
+#pragma once
 #include<iostream>
 #include<string.h>
 #include<map>
 #include<fstream>
 #include<cstdio>
 #include<vector>
-#include <bits/stdc++.h> 
+#include <bits/stdc++.h>
 #include <algorithm>
 #include <tuple>
 
@@ -44,7 +45,7 @@ struct Register{
 
 struct Page{
   Register records[PAGE_SIZE];
-  
+
   long next_bucket; // if filled, will point to next bucket
   int first_empty; // pos of first empty in page, if PAGE_SIZE -> bucket full
 
@@ -79,7 +80,7 @@ struct PageLocation{
   int index = -1;
 
   bool exists = true;
-  
+
   PageLocation(){};
   PageLocation(Register reg, long add, int ind, bool ex = true):regist(reg), address(add), index(ind), exists(ex){};
 };
@@ -121,34 +122,34 @@ istream& operator>> (istream& stream, Page & page){
 void sort(Register *arr, int low, int high, int mid){
   int i, j, k;
   Register c[high+1];
-	i = low;
-	k = low;
-	j = mid + 1;
-	while (i <= mid && j <= high) {
-			if (arr[i].name < arr[j].name) {
-					c[k] = arr[i];
-					k++;
-					i++;
-			}
-			else  {
-					c[k] = arr[j];
-					k++;
-					j++;
-			}
-	}
-	while (i <= mid) {
-			c[k] = arr[i];
-			k++;
-			i++;
-	}
-	while (j <= high) {
-			c[k] = arr[j];
-			k++;
-			j++;
-	}
-	for (i = low; i < k; i++)  {
-			arr[i] = c[i];
-	}
+    i = low;
+    k = low;
+    j = mid + 1;
+    while (i <= mid && j <= high) {
+            if (arr[i].name < arr[j].name) {
+                    c[k] = arr[i];
+                    k++;
+                    i++;
+            }
+            else  {
+                    c[k] = arr[j];
+                    k++;
+                    j++;
+            }
+    }
+    while (i <= mid) {
+            c[k] = arr[i];
+            k++;
+            i++;
+    }
+    while (j <= high) {
+            c[k] = arr[j];
+            k++;
+            j++;
+    }
+    for (i = low; i < k; i++)  {
+            arr[i] = c[i];
+    }
 }
 
 void MergeSort(Register* vec, int low, int high){
@@ -179,14 +180,15 @@ streampos fileSize(string filename){
 class ISAM{
   private:
     string fileName;
-    string indexName; // TO DO -> array of levels 
+    string indexName; // TO DO -> array of levels
     vector<Index> index = {}; // diccionario en memoria principal
 
   public:
+
     string getfileName() {return fileName;};
     string getindexName() {return indexName;};
 
-    void loadIndex(){ // TO DO -> array of levels 
+    void loadIndex(){ // TO DO -> array of levels
       Index idx;
       ifstream in_idx(indexName, ios::binary); if (!in_idx.is_open()) return;
       while(in_idx >> idx)
@@ -194,18 +196,19 @@ class ISAM{
       in_idx.close();
     }
 
-    ISAM(){};
-
     ISAM(string _fileName, string csv = ""){
-      construct(_fileName, csv);
-    }
-
-    void construct(string _fileName, string csv = ""){
       fileName = _fileName;
       indexName = fileName.substr(0, fileName.length()-4) + "_index" + to_string(1) + ".dat";
-     
+
+      /*fstream file(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
+      (file.is_open()) ? file.close() : throw("Unable to open files");*/
+      /*fstream file2(fileName, ios::out | ios::in | ios::ate | ios::app | ios::binary);
+      (file2.is_open()) ? file2.close() : throw("Unable to open files");*/
+
+      // later check for file errors
+
       if (fileSize(fileName) == 0 && !csv.empty()) csv2dat();
-      if (fileSize(indexName) == 0) build_index();  
+      if (fileSize(indexName) == 0) build_index();
       loadIndex();
     }
 
@@ -216,10 +219,10 @@ class ISAM{
 
       // load and parse csv
       std::ifstream Usuario(csv);
-      string current;	
+      string current;
 
       while (getline(Usuario, current)){
-        string name, user, mail, pass; 
+        string name, user, mail, pass;
         stringstream ss(current);
 
         getline(ss, current, ',');
@@ -236,8 +239,8 @@ class ISAM{
       }
 
       sort(registers.begin(),registers.end(),reg_nom_comp);
-      
-      // write pages to data file 
+
+      // write pages to data file
       ofstream out(fileName, ios::app | ios::binary);
       vector<Register> records;
       for (auto i = 0; i < registers.size(); ++i){
@@ -277,8 +280,8 @@ class ISAM{
       int l = 0;
       int u = index.size()-1;
 
-      if (key < index[0].key){   
-        Page paged;  
+      if (key < index[0].key){
+        Page paged;
         long address = 0;
         datafile.seekg(address);
         datafile >> paged;
@@ -288,7 +291,7 @@ class ISAM{
           datafile.seekg(address);
           datafile >> paged;
         }
-        
+
         PageLocation less(reg_empty, address, -2, false);
         return less;
       }
@@ -305,9 +308,9 @@ class ISAM{
         }
       }
 
-      if (temp >= index.size()) 
+      if (temp >= index.size())
         return empty;
-      
+
       long address = index[temp].address;
       cout << address << endl;
       datafile.seekg(address);
@@ -336,7 +339,7 @@ class ISAM{
           address = iterator.next_bucket;
           datafile.seekg(iterator.next_bucket);
           datafile >> iterator;
-          
+
         } else {
           cout << "Unable to locate key" << endl;
           PageLocation result(reg_empty, address, iterator.first_empty, false); // should return first available bucket for insert
@@ -365,7 +368,7 @@ class ISAM{
           datafile << pag;
           datafile.close();
           return true;
-          
+
       } else throw ("Unable to locate register");
       return false;
     }
@@ -413,6 +416,10 @@ class ISAM{
 
       return true;
     }
+<<<<<<< HEAD
+
+};
+=======
     
 };
 /*
@@ -445,3 +452,4 @@ int main(){
   cout<<"done!\n";
 }
 */
+>>>>>>> 395fd7fafb772353486bbcac42eb5b6567035c4e
