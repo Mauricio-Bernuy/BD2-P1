@@ -31,14 +31,14 @@ struct s_Register{
 
     s_Register(){};
     s_Register(string nam, string usr, string ml, string pss){
-        nam = nam.substr(0,30);
-        usr = usr.substr(0,30);
-        ml = ml.substr(0,41);
-        pss = pss.substr(0,12);
-        strcpy(name, (nam + string(30 - nam.length() ,' ')).c_str());
-        strcpy(user, (usr + string(30 - usr.length() ,' ')).c_str());
-        strcpy(mail, (ml + string(41 - ml.length() ,' ')).c_str());
-        strcpy(pass, (pss + string(12 - pss.length() ,' ')).c_str());
+        if (nam.size() >= 30) nam = nam.substr(0,30);
+        if (usr.size() >= 30) usr = usr.substr(0,30);
+        if (ml.size() >= 41) ml = ml.substr(0,41);
+        if (pss.size() >= 12) pss = pss.substr(0,12);
+        strcpy(name, nam.c_str());
+        strcpy(user, usr.c_str());
+        strcpy(mail, ml.c_str());
+        strcpy(pass, pss.c_str());
     }
 };
 
@@ -181,7 +181,10 @@ public:
             if (!(if_datos.good() || if_aux.good()) ) 
                 break;
 
-            if (s_reg_nom_comp(tmp, record)){
+            //if (s_reg_nom_comp(tmp, record)){
+            bool a = record.name < tmp.name;
+            bool b = string(record.name) < string(tmp.name);
+            if (!s_reg_nom_comp(record,tmp)){
                 prev.posit = nx_ptr;
                 prev.file = nx_file;
             } else break;
@@ -430,12 +433,10 @@ public:
     }    
 };
 
-/*
 int main(){
-
-
     SequentialFile asj("data.dat");
     asj.insertAll(registers);
+    asj.add(s_Register("aaron","lol","lol","lol"));
     auto s = asj.search("Aeris Oliver");
     auto b = asj.delet("Rocco Wright");
     s = asj.search("Rocco Wright");
@@ -444,4 +445,3 @@ int main(){
     s = asj.search("Gina Connor");
     cout<<"done!\n";
 }
-*/
