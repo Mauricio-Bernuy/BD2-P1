@@ -278,7 +278,7 @@ class ISAM{
       }
     }
 
-    PageLocation search(string key, short lock){
+    PageLocation search(string key, short lock = 5){
       cout << "In search with key " << key << " and lock " << lock<< endl;
       PageLocation empty, first_free;
       Register reg_empty;
@@ -358,10 +358,9 @@ class ISAM{
       }
     }
 
-    bool erase(string key, short lock){
+    bool erase(string key, short lock = 5){
       if(lock == 2) {
-        while(done != 2){
-        }
+        while(done != 2);
       }
       ++done;
       cout << "In delete with key " << key<< " and lock " << lock << endl;
@@ -392,7 +391,7 @@ class ISAM{
       return false;
     }
 
-    bool insert(Register reg, short lock){
+    bool insert(Register reg, short lock = 5){
       cout << "lock is " << lock << " and " << reg.name<< endl;
       if(lock == 2){
         while(done != 2);
@@ -530,6 +529,7 @@ class ISAM{
 
 int main(){
   ISAM ourISAM("Registro de Usuarios.dat", "Usuario.csv");
+  /*
   Query q1;
   Query q2;
   Query q3;
@@ -556,21 +556,21 @@ int main(){
   q6.operation = 1;  // Delete
   q6.key = "Athena Lloyd";
 
-  ourISAM.run(q3, q5);
-/*  auto result = ourISAM.search("Alexusis Fulton", 0);
+  ourISAM.run(q3, q5);*/
+  auto result = ourISAM.search("Alexusis Fulton");
   cout << "1" << endl;
   //ourISAM.erase("Kurt Nelson", 0);
 
-  ourISAM.insert(Register("Roger Wilson", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"), 0);
+  ourISAM.insert(Register("Roger Wilson", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
   cout << "2" << endl;
-  ourISAM.insert(Register("Kurt Nelson", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"), 0);
+  ourISAM.insert(Register("Kurt Nelson", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
   cout << "3" << endl;
-  ourISAM.insert(Register("Athena Lloyd", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"), 0);
+  ourISAM.insert(Register("Athena Lloyd", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
   cout << "4" << endl;
-  ourISAM.insert(Register("Aaron Carter", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"), 0);
+  ourISAM.insert(Register("Aaron Carter", "roger_wilson","roger_wilson@correo.com","WswASDw123Sd2"));
   cout << "5" << endl;
-  ourISAM.erase("Rocco Nelson", 0);
-
+  ourISAM.erase("Rocco Nelson");
+/*
 
   ifstream if_datafile(ourISAM.getfileName(), ios::in | ios::binary);
   ifstream if_indexfile(ourISAM.getindexName(), ios::in | ios::binary);
