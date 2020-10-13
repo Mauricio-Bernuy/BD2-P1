@@ -7,6 +7,8 @@
 #include <QDebug>
 #include <QTableWidget>
 
+using namespace std::chrono;
+
 bool Isam = false;
 bool Seq = false;
 
@@ -32,6 +34,10 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::update_TIMER(int64_t duration){
+    QString accesses = "Secondary Memory Accesses: " + QString::fromStdString(to_string(duration));
+    ui->Timer->setText(accesses);
+}
 
 void MainWindow::on_pushButton_3_clicked() // search
 {
@@ -41,21 +47,31 @@ void MainWindow::on_pushButton_3_clicked() // search
     switch (STRUCTURE_TYPE){
         case SEQUENTIAL:{
             s_Register newReg;
+                auto start = std::chrono::high_resolution_clock::now(); 
             newReg = ourSEQUENTIAL.search(target);
+                auto stop = std::chrono::high_resolution_clock::now();
             QString accesses = "Secondary Memory Accesses: " +
                     QString::fromStdString(to_string(ourSEQUENTIAL.mem_access_counter_AUX + ourSEQUENTIAL.mem_access_counter_DATA));
             ui->Accesses->setText(accesses);
             update_table_SEQUENTIAL();
+            auto d = duration_cast<microseconds>(stop - start);
+            auto SEQ_search = d.count();
+            update_TIMER(SEQ_search);
             break;
         }
 
         case ISAM:{
             PageLocation loc;
+                auto start = std::chrono::high_resolution_clock::now(); 
             loc = ourISAM.search(target);
+                auto stop = std::chrono::high_resolution_clock::now();
             QString accesses = "Secondary Memory Accesses: " +
                     QString::fromStdString(to_string(ourISAM.mem_access_counter_INDEX + ourISAM.mem_access_counter_DATA));
             ui->Accesses->setText(accesses);
             update_table_ISAM();
+            auto d = duration_cast<microseconds>(stop - start);
+            auto ISAM_search = d.count();
+            update_TIMER(ISAM_search);
             break;
         }
 
@@ -104,20 +120,30 @@ void MainWindow::on_pushButton_4_clicked() //insert
 
     switch (STRUCTURE_TYPE){
         case SEQUENTIAL:{
+                auto start = std::chrono::high_resolution_clock::now(); 
             ourSEQUENTIAL.add(s_Register(name, user, mail, pass));
+                auto stop = std::chrono::high_resolution_clock::now(); 
             QString accesses = "Secondary Memory Accesses: " +
                     QString::fromStdString(to_string(ourSEQUENTIAL.mem_access_counter_AUX + ourSEQUENTIAL.mem_access_counter_DATA));
             ui->Accesses->setText(accesses);
             update_table_SEQUENTIAL();
+            auto d = duration_cast<microseconds>(stop - start);
+            auto SEQ_insert_duration = d.count();
+            update_TIMER(SEQ_insert_duration);
             break;
         }
 
         case ISAM:{
+                auto start = std::chrono::high_resolution_clock::now();
             added = ourISAM.insert(Register(name, user, mail, pass));
+                auto stop = std::chrono::high_resolution_clock::now(); 
             QString accesses = "Secondary Memory Accesses: " +
                     QString::fromStdString(to_string(ourISAM.mem_access_counter_INDEX + ourISAM.mem_access_counter_DATA));
             ui->Accesses->setText(accesses);
             update_table_ISAM();
+            auto d = duration_cast<microseconds>(stop - start);
+            auto ISAM_insert_duration = d.count();
+            update_TIMER(ISAM_insert_duration);
             break;
         }
 
@@ -136,20 +162,31 @@ void MainWindow::on_pushButton_5_clicked() //delete
 
     switch (STRUCTURE_TYPE){
         case SEQUENTIAL:{
+            auto start = std::chrono::high_resolution_clock::now(); 
             deleteded = ourSEQUENTIAL.delet(target);
+            auto stop = std::chrono::high_resolution_clock::now(); 
+            
             QString accesses = "Secondary Memory Accesses: " +
                     QString::fromStdString(to_string(ourSEQUENTIAL.mem_access_counter_AUX + ourSEQUENTIAL.mem_access_counter_DATA));
             ui->Accesses->setText(accesses);
             update_table_SEQUENTIAL();
+            auto d = duration_cast<microseconds>(stop - start);
+            auto SEQ_del_duration = d.count();
+            update_TIMER(SEQ_del_duration);
             break;
         }
 
         case ISAM:{
+                auto start = std::chrono::high_resolution_clock::now();
             deleteded = ourISAM.erase(target);
+                auto stop = std::chrono::high_resolution_clock::now(); 
             QString accesses = "Secondary Memory Accesses: " +
                     QString::fromStdString(to_string(ourISAM.mem_access_counter_INDEX + ourISAM.mem_access_counter_DATA));
             ui->Accesses->setText(accesses);
             update_table_ISAM();
+            auto d = duration_cast<microseconds>(stop - start);
+            auto ISAM_del_duration = d.count();
+            update_TIMER(ISAM_del_duration);
             break;
         }
 
@@ -218,10 +255,16 @@ void MainWindow::on_pushButton_clicked() // ISAM BUTTON
     clear_files();
 
     STRUCTURE_TYPE = ISAM;
+        auto start = high_resolution_clock::now();  
     ourISAM.construct( ISAM_FILENAME , "Usuario.csv");
+        auto stop = high_resolution_clock::now(); 
     QString accesses = "Secondary Memory Accesses: " + QString::fromStdString(to_string(ourISAM.mem_access_counter_INDEX + ourISAM.mem_access_counter_DATA));
     ui->Accesses->setText(accesses);
     update_table_ISAM();
+    
+    auto d = duration_cast<microseconds>(stop - start);
+    auto build_duration = d.count();
+    update_TIMER(build_duration);
 }
 
 
@@ -230,10 +273,16 @@ void MainWindow::on_pushButton_2_clicked() // SEQUENTIAL BUTTON
     clear_files();
 
     STRUCTURE_TYPE = SEQUENTIAL;
+        auto start = high_resolution_clock::now();  
     ourSEQUENTIAL.construct(SEQUENTIAL_FILENAME, "Usuario.csv");
+        auto stop = high_resolution_clock::now(); 
     QString accesses = "Secondary Memory Accesses: " + QString::fromStdString(to_string(ourSEQUENTIAL.mem_access_counter_AUX + ourSEQUENTIAL.mem_access_counter_DATA));
     ui->Accesses->setText(accesses);
     update_table_SEQUENTIAL();
+        
+    auto d = duration_cast<microseconds>(stop - start);
+    auto build_duration = d.count();
+    update_TIMER(build_duration);
 }
 
 void MainWindow::on_pushButton_6_clicked() // REFRESH
