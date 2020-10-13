@@ -34,5 +34,6 @@ private slots:
     void update_table_ISAM();
     void update_table_SEQUENTIAL();
     void clear_files();
+    void updata_TIMER(int64_t duration);
 };
 #endif // MAINWINDOW_H
