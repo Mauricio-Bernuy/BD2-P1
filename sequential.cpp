@@ -7,13 +7,12 @@
 #include <stack>
 #include <algorithm>
 #include <sstream>
-
 using namespace std;
 
 enum file_sel {a,d};
 
 struct pos{
-    int posit = -1;
+    long posit = -1;
     file_sel file = d;
     pos(){}
     pos(int p, file_sel f):posit(p),file(f){}
@@ -24,50 +23,36 @@ struct s_Register{
     char user[30];
     char mail[41];
     char pass[12];
-
-    int pos = -1;
+    
+    long pos = -1;
     file_sel file = d;
     bool deleted = false;
 
     s_Register(){};
     s_Register(string nam, string usr, string ml, string pss){
-        nam = nam.substr(0,29);
-        usr = usr.substr(0,29);
-        ml = ml.substr(0,40); 
-        pss = pss.substr(0,11);      
-        strcpy(name, (nam + string(30 - nam.length() ,' ')).c_str());
-        strcpy(user, (usr + string(30 - usr.length() ,' ')).c_str());
-        strcpy(mail, (ml + string(41 - ml.length() ,' ')).c_str());
-        strcpy(pass, (pss + string(12 - pss.length() ,' ')).c_str());
+        if (nam.size() >= 30) nam = nam.substr(0,30);
+        if (usr.size() >= 30) usr = usr.substr(0,30);
+        if (ml.size() >= 41) ml = ml.substr(0,41);
+        if (pss.size() >= 12) pss = pss.substr(0,12);
+        strcpy(name, nam.c_str());
+        strcpy(user, usr.c_str());
+        strcpy(mail, ml.c_str());
+        strcpy(pass, pss.c_str());
     }
 };
 
 inline vector<s_Register> registers;
 
-inline void load_data(string csv = "Usuario.csv"){
-	std::ifstream Usuario(csv);
-	
-	string current;	
-	while(getline(Usuario, current)){
-        string name, user, mail, pass; 
-		stringstream ss(current);
-
-		getline(ss, current, ',');
-		name = current;
-		getline(ss, current, ',');
-        user = current;
-        getline(ss, current, ',');
-        mail = current;
-        getline(ss, current, ',');
-        pass = current;
-
-        s_Register temp(name, user, mail, pass);
-		registers.push_back(temp);
-	}
-}
-
 inline bool s_reg_nom_comp(s_Register a, s_Register b){
-    return string(a.name) < string(b.name);
+    string s1 = a.name;
+    string s2 = b.name;
+    for_each(s1.begin(), s1.end(), [](char & c){
+			c = ::tolower(c);
+	});
+	for_each(s2.begin(), s2.end(), [](char & c){
+			c = ::tolower(c);
+	});
+    return s1 < s2;
 }
 
 inline streampos s_fileSize(string filename){
@@ -82,20 +67,54 @@ inline streampos s_fileSize(string filename){
     return fsize;
 }
 
+inline istream& operator>> (istream& stream, s_Register & record){
+  stream.read((char*) &record, sizeof(record));
+  return stream;
+}
+
 class SequentialFile{
 private:
     string Name;
 public:
+    int mem_access_counter_AUX, mem_access_counter_DATA = 0;
     SequentialFile(){};
     SequentialFile(string n, string csv = ""){
        construct(n,csv);
     };
 
     void construct(string n, string csv = ""){
+        mem_access_counter_AUX = 0;
+        mem_access_counter_DATA = 0;
         Name = n;
-        if ((!csv.empty()) && s_fileSize(n) == 0) {
+        bool a = (!csv.empty());
+        long b = s_fileSize(n);
+        if (a && (b == 0)) {
             load_data(csv);
             insertAll(registers);
+            registers.clear();
+        }
+    }
+
+    inline void load_data(string csv = "Usuario.csv"){
+        std::ifstream Usuario(csv);
+        
+        string current;	
+        while(getline(Usuario, current)){ {mem_access_counter_DATA++;}
+            string name, user, mail, pass; 
+            stringstream ss(current);
+
+            getline(ss, current, ',');
+            name = current;
+            getline(ss, current, ',');
+            user = current;
+            getline(ss, current, ',');
+            mail = current;
+            getline(ss, current, ',');
+            pass = current;
+
+            s_Register temp(name, user, mail, pass);
+            registers.push_back(temp);
+            
         }
     }
 
@@ -111,28 +130,51 @@ public:
             if (s_fileSize("auxil.dat") <= 0)
                 return result;
         }
-        else
-            next_coord = d;
-
+        else{
+            if(!(s_fileSize("auxil.dat") <= 0)){ // first key can be in either
+                auto r = load_aux();
+                s_Register tmp1;
+                if_datos >> tmp1;
+                next_coord = d;
+                for (auto i = 0; i < r.size(); ++i){
+                    if (s_reg_nom_comp(r[i],tmp1) && !(r[i].deleted)){
+                        next_pos = i * sizeof(tmp);
+                        next_coord = a;
+                        break;
+                    }
+                }
+            }
+            else next_coord = d;
+        }
         while(next_pos != -1){
             if (next_coord == d){
                 if_datos.seekg(next_pos, ios::beg);
-                if_datos.read((char*) &tmp, sizeof(tmp));
+                if_datos.read((char*) &tmp, sizeof(tmp)); {mem_access_counter_DATA++;}
 
             } else{
                 if_aux.seekg(next_pos, ios::beg);
-                if_aux.read((char*) &tmp, sizeof(tmp));
+                if_aux.read((char*) &tmp, sizeof(tmp)); {mem_access_counter_AUX++;}
             }
             
             if (!(if_datos.good() || if_aux.good())) 
                 break;
 
             //if not deleted then
-            result.push_back(tmp);   
+            if (!(tmp.deleted)) result.push_back(tmp);
             next_pos = tmp.pos;
             next_coord = tmp.file;
         } 
         if_datos.close();
+        if_aux.close();
+        return result;
+    }
+    vector<s_Register> load_aux(){
+        s_Register res;
+        vector<s_Register> result;
+        fstream if_aux("auxil.dat", ios::in | ios::binary);
+        while (if_aux >> res)   
+            result.push_back(res); {mem_access_counter_AUX++;}
+        //sort(result.begin(),result.end(),s_reg_nom_comp);
         if_aux.close();
         return result;
     }
@@ -141,7 +183,7 @@ public:
         sort(registros.begin(),registros.end(),s_reg_nom_comp);
 
         for (auto i = registros.begin(); i != registros.end(); ++i){
-            add(*i);
+            add(*i,false);
         }
     }
 
@@ -165,18 +207,23 @@ public:
         while(nx_ptr >= 0){
             if (nx_file == d){
                 if_datos.seekg(nx_ptr, ios::beg);
-                if_datos.read((char*) &tmp, sizeof(tmp));
+                if_datos.read((char*) &tmp, sizeof(tmp));{mem_access_counter_DATA++;}
 
             } else{
                 //if_aux.open("auxil.dat", ios::in | ios::binary);
                 if_aux.seekg(nx_ptr, ios::beg);
-                if_aux.read((char*) &tmp, sizeof(tmp));
+                if_aux.read((char*) &tmp, sizeof(tmp));{mem_access_counter_AUX++;}
             }
             
             if (!(if_datos.good() || if_aux.good()) ) 
                 break;
 
-            if (s_reg_nom_comp(tmp, record)){
+            //if (s_reg_nom_comp(tmp, record)){
+            bool a = record.name < tmp.name;
+            string s1 = string(record.name);
+            string s2 = string(tmp.name);
+            bool b = string(record.name) < string(tmp.name);
+            if (s_reg_nom_comp(tmp,record)){
                 prev.posit = nx_ptr;
                 prev.file = nx_file;
             } else break;
@@ -209,11 +256,11 @@ public:
         while(nx_ptr >= 0){
             if (nx_file == d){
                 if_datos.seekg(nx_ptr, ios::beg);
-                if_datos.read((char*) &tmp, sizeof(tmp));
+                if_datos.read((char*) &tmp, sizeof(tmp));{mem_access_counter_DATA++;}
 
             } else{
                 if_aux.seekg(nx_ptr, ios::beg);
-                if_aux.read((char*) &tmp, sizeof(tmp));
+                if_aux.read((char*) &tmp, sizeof(tmp));{mem_access_counter_AUX++;}
             }
             
             if (!(if_datos.good() || if_aux.good())) 
@@ -235,6 +282,9 @@ public:
     }
 
     s_Register search(string key){
+        mem_access_counter_DATA = 0;
+        mem_access_counter_AUX = 0;
+
         s_Register result;
 
         int pos = searchpos(key);
@@ -242,7 +292,7 @@ public:
         if (pos != -1){
             ifstream if_datos(Name, ios::in | ios::binary);
             if_datos.seekg((pos * sizeof(result)), ios::beg);
-            if_datos.read((char*) &result, sizeof(result));
+            if_datos.read((char*) &result, sizeof(result));{mem_access_counter_DATA++;}
             if_datos.close();
         } 
 
@@ -250,8 +300,8 @@ public:
     }
 
     int searchpos(string key, bool offloadaux = true){
-        key = key.substr(0,29);
-        key = key + string(30 - key.length() ,' ');
+        /*key = key.substr(0,29);
+        key = key + string(30 - key.length() ,' ');*/
 
         s_Register tmp;
 
@@ -270,10 +320,10 @@ public:
 
         while (u >= l){
             int m = (u + l)/2;
-
             ifstream if_datos(Name, ios::in | ios::binary);
             if_datos.seekg((m * sizeof(tmp)), ios::beg);
-            if_datos.read((char*) &tmp, sizeof(tmp));
+            if_datos.read((char*) &tmp, sizeof(tmp));{mem_access_counter_DATA++;}
+
             if_datos.close();
             if (tmp.deleted == true) 
                 u = m - 1;
@@ -312,12 +362,24 @@ public:
         fstream ofs;
         ofs.open(Name, ios::out | ios::app | ios::binary);
         for (auto i = x.begin(); i != x.end(); ++i){
-            ofs.write((char*) &*i, sizeof(*i));
+            ofs.write((char*) &*i, sizeof(*i)); {mem_access_counter_DATA++;}
         }
         ofs.close();
     }
+    
+    bool search_aux(string key){
+        auto r = load_aux();
+        for (auto i = 0; i < r.size(); ++i){
+            if (r[i].name == key) return true;
+        }
+        return false;
+    }
 
-    void add(s_Register record){
+    void add(s_Register record, bool count = true){
+        if (count){
+            mem_access_counter_DATA = 0;
+            mem_access_counter_AUX = 0;
+        }
         s_Register tmp;
         fstream ofs;
         
@@ -325,8 +387,8 @@ public:
         ofs.seekg(0, ios::end);
 
         long position = ofs.tellg(); // BYTES
-
-        if (searchpos(record.name, false) != -1){
+        
+        if (searchpos(record.name, false) != -1 || search_aux(record.name)){
             cout<<"key already present\n";
             return;
         }
@@ -342,7 +404,7 @@ public:
         record.file = next.file;
 
         ofs.seekp(0, ios::end);
-        ofs.write((char*) &record, sizeof(record));
+        ofs.write((char*) &record, sizeof(record)); {mem_access_counter_AUX++;}
         ofs.close();
 
         if(prev.posit != -1){
@@ -352,17 +414,26 @@ public:
             else 
                 edit.open("auxil.dat", ios::in | ios::out | ios::binary);
             
+            int i = 0;
             edit.seekg(prev.posit, ios::beg);
-            edit.read((char*) &tmp, sizeof(tmp));
+            edit.read((char*) &tmp, sizeof(tmp)); {i++;}
             tmp.pos = position;
             tmp.file = a;
             edit.seekp(prev.posit, ios::beg);
-            edit.write((char*) &tmp, sizeof(tmp));
+            edit.write((char*) &tmp, sizeof(tmp)); {i++;}
             edit.close();
+
+            if (prev.file == d)
+                {mem_access_counter_DATA += i;}
+            else 
+                {mem_access_counter_AUX += i;}
         }
     }   
 
     bool delet(string key){
+        mem_access_counter_DATA = 0;
+        mem_access_counter_AUX = 0;
+        
         s_Register tmp, prevreg;
 
         int position = searchpos(key);
@@ -370,7 +441,7 @@ public:
 
         ifstream if_datos(Name, ios::in | ios::binary);
         if_datos.seekg((position * sizeof(tmp)), ios::beg);
-        if_datos.read((char*) &tmp, sizeof(tmp));
+        if_datos.read((char*) &tmp, sizeof(tmp)); {mem_access_counter_DATA++;}
         if_datos.close();
 
         pos prev = getprev(tmp);
@@ -382,7 +453,7 @@ public:
 
         edit.open(Name, ios::in | ios::out | ios::binary);
         edit.seekp((position* sizeof(tmp)), ios::beg);
-        edit.write((char*) &tmp, sizeof(tmp));
+        edit.write((char*) &tmp, sizeof(tmp)); {mem_access_counter_DATA++;}
         edit.close();
 
         if (prev.file == d)
@@ -390,25 +461,30 @@ public:
         else 
             edit.open("auxil.dat", ios::in | ios::out | ios::binary);
         
-        edit.seekg(prev.posit, ios::beg);
-        edit.read((char*) &prevreg, sizeof(prevreg));
-        prevreg.pos = next.posit;
-        prevreg.file = next.file;
-        edit.seekp(prev.posit, ios::beg);
-        edit.write((char*) &prevreg, sizeof(prevreg));
+        int i = 0;
 
+        if (prev.posit != -1){
+            edit.seekg(prev.posit, ios::beg);
+            edit.read((char*) &prevreg, sizeof(prevreg)); {i++;}
+            prevreg.pos = next.posit;
+            prevreg.file = next.file;
+            edit.seekp(prev.posit, ios::beg);
+            edit.write((char*) &prevreg, sizeof(prevreg));{i++;}
+        }
         edit.close();
 
+        if (prev.file == d)
+            {mem_access_counter_DATA += i;}
+        else 
+            {mem_access_counter_AUX += i;}
         return true;
     }    
 };
-
 /*
 int main(){
-
-
-    SequentialFile asj("data.dat");
-    asj.insertAll(registers);
+    SequentialFile asj("data.dat", "Usuario.csv");
+    //asj.insertAll(registers);
+    asj.add(s_Register("aaron","lol","lol","lol"));
     auto s = asj.search("Aeris Oliver");
     auto b = asj.delet("Rocco Wright");
     s = asj.search("Rocco Wright");
@@ -416,5 +492,4 @@ int main(){
     s = asj.search("Aeris Oliver");
     s = asj.search("Gina Connor");
     cout<<"done!\n";
-}
-*/
+}*/
