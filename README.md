@@ -1,6 +1,8 @@
 # Integrantes:
 Claudia Noche
+
 Mauricio Bernuy
+
 Stephano Württele
 
 # Introducción
