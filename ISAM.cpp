@@ -16,7 +16,7 @@ using namespace std;
 #define PAGE_SIZE 4
 #define INDEX_LEVELS 1
 
-mutex mtx;
+
 
 struct Register{
   char name[30];
@@ -203,6 +203,7 @@ class ISAM{
     short done = 0;
 
   public:
+    mutex mtx;
     int mem_access_counter_INDEX, mem_access_counter_DATA = 0;
 
     string getfileName() {return fileName;};
@@ -334,12 +335,6 @@ class ISAM{
         }
       }
         if(lock == 1) {while(done != 2);}
-        if (temp >= index.size())
-          return empty;
-        
-        long address = index[temp].address;
-        cout << address << endl;
-        datafile.seekg(address);
 
       if (temp >= index.size()) 
         return empty;
