@@ -48,6 +48,7 @@ public:
     QTableWidget *tableWidgetResult;
     QLabel *text1;
     QLabel *Timer;
+    QLabel *Message;
     QMenuBar *menubar;
     QStatusBar *statusbar;
 
@@ -61,16 +62,16 @@ public:
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         pushButton = new QPushButton(centralwidget);
         pushButton->setObjectName(QString::fromUtf8("pushButton"));
-        pushButton->setGeometry(QRect(10, 10, 91, 41));
+        pushButton->setGeometry(QRect(40, 10, 91, 41));
         pushButton_2 = new QPushButton(centralwidget);
         pushButton_2->setObjectName(QString::fromUtf8("pushButton_2"));
-        pushButton_2->setGeometry(QRect(10, 50, 91, 41));
+        pushButton_2->setGeometry(QRect(40, 50, 91, 41));
         pushButton_6 = new QPushButton(centralwidget);
         pushButton_6->setObjectName(QString::fromUtf8("pushButton_6"));
-        pushButton_6->setGeometry(QRect(10, 460, 89, 25));
+        pushButton_6->setGeometry(QRect(20, 460, 89, 25));
         layoutWidget = new QWidget(centralwidget);
         layoutWidget->setObjectName(QString::fromUtf8("layoutWidget"));
-        layoutWidget->setGeometry(QRect(150, 10, 541, 129));
+        layoutWidget->setGeometry(QRect(220, 10, 541, 129));
         horizontalLayout = new QHBoxLayout(layoutWidget);
         horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
         horizontalLayout->setContentsMargins(0, 0, 0, 0);
@@ -147,7 +148,7 @@ public:
         Accesses->setGeometry(QRect(270, 470, 321, 31));
         tableWidgetResult = new QTableWidget(centralwidget);
         tableWidgetResult->setObjectName(QString::fromUtf8("tableWidgetResult"));
-        tableWidgetResult->setGeometry(QRect(530, 240, 271, 61));
+        tableWidgetResult->setGeometry(QRect(530, 240, 301, 101));
         tableWidgetResult->setAutoFillBackground(false);
         text1 = new QLabel(centralwidget);
         text1->setObjectName(QString::fromUtf8("text1"));
@@ -155,6 +156,9 @@ public:
         Timer = new QLabel(centralwidget);
         Timer->setObjectName(QString::fromUtf8("Timer"));
         Timer->setGeometry(QRect(270, 500, 321, 31));
+        Message = new QLabel(centralwidget);
+        Message->setObjectName(QString::fromUtf8("Message"));
+        Message->setGeometry(QRect(520, 350, 321, 31));
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName(QString::fromUtf8("menubar"));
@@ -185,6 +189,7 @@ public:
         Accesses->setText(QString());
         text1->setText(QCoreApplication::translate("MainWindow", "Result: ", nullptr));
         Timer->setText(QString());
+        Message->setText(QString());
     } // retranslateUi
 
 };

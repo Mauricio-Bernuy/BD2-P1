@@ -33,6 +33,8 @@ private slots:
     void on_pushButton_6_clicked();
     void update_table_ISAM();
     void update_table_SEQUENTIAL();
+    void update_result_ISAM(Register reg);
+    void update_result_SEQUENTIAL(s_Register reg);
     void clear_files();
     void update_TIMER(int64_t duration);
 };

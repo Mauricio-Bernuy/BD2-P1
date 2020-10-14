@@ -20,7 +20,7 @@
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>40</x>
       <y>10</y>
       <width>91</width>
       <height>41</height>
@@ -33,7 +33,7 @@
    <widget class="QPushButton" name="pushButton_2">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>40</x>
       <y>50</y>
       <width>91</width>
       <height>41</height>
@@ -46,7 +46,7 @@
    <widget class="QPushButton" name="pushButton_6">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>20</x>
       <y>460</y>
       <width>89</width>
       <height>25</height>
@@ -59,7 +59,7 @@
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>150</x>
+      <x>220</x>
       <y>10</y>
       <width>541</width>
       <height>129</height>
@@ -183,8 +183,8 @@ QpushButton:pressed{
      <rect>
       <x>530</x>
       <y>240</y>
-      <width>271</width>
-      <height>61</height>
+      <width>301</width>
+      <height>101</height>
      </rect>
     </property>
     <property name="autoFillBackground">
@@ -209,6 +209,19 @@ QpushButton:pressed{
      <rect>
       <x>270</x>
       <y>500</y>
+      <width>321</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Message">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>350</y>
       <width>321</width>
       <height>31</height>
      </rect>

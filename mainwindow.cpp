@@ -55,6 +55,20 @@ void MainWindow::on_pushButton_3_clicked() // search
                     QString::fromStdString(to_string(ourSEQUENTIAL.mem_access_counter_AUX + ourSEQUENTIAL.mem_access_counter_DATA));
             ui->Accesses->setText(accesses);
             update_table_SEQUENTIAL();
+
+            auto i = ourSEQUENTIAL.searchpos(target);
+
+            if (i != -1){
+                update_result_SEQUENTIAL(newReg);
+                ui->Message->setText("success!");
+            }
+            else {
+                ui->tableWidgetResult->setRowCount(0);
+                //error msg
+                ui->Message->setText("not found!");
+            }
+
+
             auto d = duration_cast<milliseconds>(stop - start);
             auto SEQ_search = d.count();
             update_TIMER(SEQ_search);
@@ -70,9 +84,20 @@ void MainWindow::on_pushButton_3_clicked() // search
                     QString::fromStdString(to_string(ourISAM.mem_access_counter_INDEX + ourISAM.mem_access_counter_DATA));
             ui->Accesses->setText(accesses);
             update_table_ISAM();
+            if (loc.exists){
+                update_result_ISAM(loc.regist);
+                ui->Message->setText("success!");
+            }
+            else {
+                ui->tableWidgetResult->setRowCount(0);
+                //error msg
+                ui->Message->setText("not found!");
+            }
+
             auto d = duration_cast<milliseconds>(stop - start);
             auto ISAM_search = d.count();
             update_TIMER(ISAM_search);
+
             break;
         }
 
@@ -195,6 +220,35 @@ void MainWindow::on_pushButton_5_clicked() //delete
             return;
     }
 }
+void MainWindow::update_result_ISAM(Register reg)
+{
+    ui->tableWidgetResult->setRowCount(0);
+    ui->tableWidgetResult->insertRow(ui->tableWidgetResult->rowCount());
+
+    ui->tableWidgetResult->setItem
+            (ui->tableWidgetResult->rowCount() - 1, 0, new QTableWidgetItem(QString::fromStdString(string(reg.name))));
+    ui->tableWidgetResult->setItem
+            (ui->tableWidgetResult->rowCount() - 1, 1, new QTableWidgetItem(QString::fromStdString(string(reg.user))));
+    ui->tableWidgetResult->setItem
+            (ui->tableWidgetResult->rowCount() - 1, 2, new QTableWidgetItem(QString::fromStdString(string(reg.mail))));
+    ui->tableWidgetResult->setItem
+            (ui->tableWidgetResult->rowCount() - 1, 3, new QTableWidgetItem(QString::fromStdString(string(reg.pass).substr(0,12))));
+}
+
+void MainWindow::update_result_SEQUENTIAL(s_Register reg)
+{
+    ui->tableWidgetResult->setRowCount(0);
+    ui->tableWidgetResult->insertRow(ui->tableWidgetResult->rowCount());
+
+    ui->tableWidgetResult->setItem
+            (ui->tableWidgetResult->rowCount() - 1, 0, new QTableWidgetItem(QString::fromStdString(string(reg.name))));
+    ui->tableWidgetResult->setItem
+            (ui->tableWidgetResult->rowCount() - 1, 1, new QTableWidgetItem(QString::fromStdString(string(reg.user))));
+    ui->tableWidgetResult->setItem
+            (ui->tableWidgetResult->rowCount() - 1, 2, new QTableWidgetItem(QString::fromStdString(string(reg.mail))));
+    ui->tableWidgetResult->setItem
+            (ui->tableWidgetResult->rowCount() - 1, 3, new QTableWidgetItem(QString::fromStdString(string(reg.pass).substr(0,12))));
+}
 
 void MainWindow::update_table_ISAM()
 {
@@ -266,6 +320,8 @@ void MainWindow::on_pushButton_clicked() // ISAM BUTTON
     auto d = duration_cast<milliseconds>(stop - start);
     auto build_duration = d.count();
     update_TIMER(build_duration);
+    ui->tableWidgetResult->setRowCount(0);
+    ui->Message->setText("");
 }
 
 
@@ -284,6 +340,8 @@ void MainWindow::on_pushButton_2_clicked() // SEQUENTIAL BUTTON
     auto d = duration_cast<milliseconds>(stop - start);
     auto build_duration = d.count();
     update_TIMER(build_duration);
+    ui->tableWidgetResult->setRowCount(0);
+    ui->Message->setText("");
 }
 
 void MainWindow::on_pushButton_6_clicked() // REFRESH
