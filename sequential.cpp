@@ -388,7 +388,6 @@ public:
 
         long position = ofs.tellg(); // BYTES
         
-        
         if (searchpos(record.name, false) != -1 || search_aux(record.name)){
             cout<<"key already present\n";
             return;

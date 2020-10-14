@@ -167,7 +167,15 @@ inline void MergeSort(Register* vec, int low, int high){
 }
 
 inline bool reg_nom_comp(Register a, Register b){
-    return string(a.name) < string(b.name);
+    string s1 = a.name;
+    string s2 = b.name;
+    for_each(s1.begin(), s1.end(), [](char & c){
+			c = ::tolower(c);
+    });
+    for_each(s2.begin(), s2.end(), [](char & c){
+      c = ::tolower(c);
+    });
+    return s1 < s2;
 }
 
 inline streampos fileSize(string filename){
@@ -413,7 +421,7 @@ class ISAM{
         p.index = pag.first_empty;
       }
 
-      if (p.index == 4){ // if needs to create overflow
+      if (p.index == PAGE_SIZE){ // if needs to create overflow
         datafile.seekp(0, ios::end);
         pag.next_bucket = datafile.tellp();
         datafile.seekp(p.address);
