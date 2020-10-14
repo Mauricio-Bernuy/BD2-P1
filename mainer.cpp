@@ -7,7 +7,10 @@
 #include <stack>
 #include <algorithm>
 #include <sstream>
-
+/*
+#include "ISAM.cpp"
+#include "sequential.cpp"
+*/
 using namespace std;
 
 
