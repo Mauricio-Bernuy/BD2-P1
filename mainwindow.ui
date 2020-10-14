@@ -178,10 +178,10 @@ QpushButton:pressed{
      <string/>
     </property>
    </widget>
-   <widget class="QTableWidget" name="tableWidget_2">
+   <widget class="QTableWidget" name="tableWidgetResult">
     <property name="geometry">
      <rect>
-      <x>540</x>
+      <x>530</x>
       <y>240</y>
       <width>271</width>
       <height>61</height>
@@ -202,6 +202,19 @@ QpushButton:pressed{
     </property>
     <property name="text">
      <string>Result: </string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Timer">
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>500</y>
+      <width>321</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
     </property>
    </widget>
   </widget>

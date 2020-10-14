@@ -45,8 +45,9 @@ public:
     QLineEdit *target3;
     QTableWidget *tableWidget;
     QLabel *Accesses;
-    QTableWidget *tableWidget_2;
+    QTableWidget *tableWidgetResult;
     QLabel *text1;
+    QLabel *Timer;
     QMenuBar *menubar;
     QStatusBar *statusbar;
 
@@ -144,13 +145,16 @@ public:
         Accesses = new QLabel(centralwidget);
         Accesses->setObjectName(QString::fromUtf8("Accesses"));
         Accesses->setGeometry(QRect(270, 470, 321, 31));
-        tableWidget_2 = new QTableWidget(centralwidget);
-        tableWidget_2->setObjectName(QString::fromUtf8("tableWidget_2"));
-        tableWidget_2->setGeometry(QRect(540, 240, 271, 61));
-        tableWidget_2->setAutoFillBackground(false);
+        tableWidgetResult = new QTableWidget(centralwidget);
+        tableWidgetResult->setObjectName(QString::fromUtf8("tableWidgetResult"));
+        tableWidgetResult->setGeometry(QRect(530, 240, 271, 61));
+        tableWidgetResult->setAutoFillBackground(false);
         text1 = new QLabel(centralwidget);
         text1->setObjectName(QString::fromUtf8("text1"));
         text1->setGeometry(QRect(540, 200, 341, 41));
+        Timer = new QLabel(centralwidget);
+        Timer->setObjectName(QString::fromUtf8("Timer"));
+        Timer->setGeometry(QRect(270, 500, 321, 31));
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName(QString::fromUtf8("menubar"));
@@ -180,6 +184,7 @@ public:
         target3->setPlaceholderText(QCoreApplication::translate("MainWindow", "name to delete", nullptr));
         Accesses->setText(QString());
         text1->setText(QCoreApplication::translate("MainWindow", "Result: ", nullptr));
+        Timer->setText(QString());
     } // retranslateUi
 
 };

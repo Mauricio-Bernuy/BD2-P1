@@ -26,7 +26,8 @@ MainWindow::MainWindow(QWidget *parent)
     header << "Name" << "User" << "Mail" << "Pass";
     ui->tableWidget->setColumnCount(4);
     ui->tableWidget->setHorizontalHeaderLabels(header);
-
+    ui->tableWidgetResult->setColumnCount(4);
+    ui->tableWidgetResult->setHorizontalHeaderLabels(header);
 }
 
 MainWindow::~MainWindow()
@@ -35,7 +36,7 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::update_TIMER(int64_t duration){
-    QString accesses = "Secondary Memory Accesses: " + QString::fromStdString(to_string(duration));
+    QString accesses = "Elapsed time: " + QString::fromStdString(to_string(duration)) + "ms";
     ui->Timer->setText(accesses);
 }
 
@@ -54,7 +55,7 @@ void MainWindow::on_pushButton_3_clicked() // search
                     QString::fromStdString(to_string(ourSEQUENTIAL.mem_access_counter_AUX + ourSEQUENTIAL.mem_access_counter_DATA));
             ui->Accesses->setText(accesses);
             update_table_SEQUENTIAL();
-            auto d = duration_cast<microseconds>(stop - start);
+            auto d = duration_cast<milliseconds>(stop - start);
             auto SEQ_search = d.count();
             update_TIMER(SEQ_search);
             break;
@@ -69,7 +70,7 @@ void MainWindow::on_pushButton_3_clicked() // search
                     QString::fromStdString(to_string(ourISAM.mem_access_counter_INDEX + ourISAM.mem_access_counter_DATA));
             ui->Accesses->setText(accesses);
             update_table_ISAM();
-            auto d = duration_cast<microseconds>(stop - start);
+            auto d = duration_cast<milliseconds>(stop - start);
             auto ISAM_search = d.count();
             update_TIMER(ISAM_search);
             break;
@@ -127,7 +128,7 @@ void MainWindow::on_pushButton_4_clicked() //insert
                     QString::fromStdString(to_string(ourSEQUENTIAL.mem_access_counter_AUX + ourSEQUENTIAL.mem_access_counter_DATA));
             ui->Accesses->setText(accesses);
             update_table_SEQUENTIAL();
-            auto d = duration_cast<microseconds>(stop - start);
+            auto d = duration_cast<milliseconds>(stop - start);
             auto SEQ_insert_duration = d.count();
             update_TIMER(SEQ_insert_duration);
             break;
@@ -141,7 +142,7 @@ void MainWindow::on_pushButton_4_clicked() //insert
                     QString::fromStdString(to_string(ourISAM.mem_access_counter_INDEX + ourISAM.mem_access_counter_DATA));
             ui->Accesses->setText(accesses);
             update_table_ISAM();
-            auto d = duration_cast<microseconds>(stop - start);
+            auto d = duration_cast<milliseconds>(stop - start);
             auto ISAM_insert_duration = d.count();
             update_TIMER(ISAM_insert_duration);
             break;
@@ -170,7 +171,7 @@ void MainWindow::on_pushButton_5_clicked() //delete
                     QString::fromStdString(to_string(ourSEQUENTIAL.mem_access_counter_AUX + ourSEQUENTIAL.mem_access_counter_DATA));
             ui->Accesses->setText(accesses);
             update_table_SEQUENTIAL();
-            auto d = duration_cast<microseconds>(stop - start);
+            auto d = duration_cast<milliseconds>(stop - start);
             auto SEQ_del_duration = d.count();
             update_TIMER(SEQ_del_duration);
             break;
@@ -184,7 +185,7 @@ void MainWindow::on_pushButton_5_clicked() //delete
                     QString::fromStdString(to_string(ourISAM.mem_access_counter_INDEX + ourISAM.mem_access_counter_DATA));
             ui->Accesses->setText(accesses);
             update_table_ISAM();
-            auto d = duration_cast<microseconds>(stop - start);
+            auto d = duration_cast<milliseconds>(stop - start);
             auto ISAM_del_duration = d.count();
             update_TIMER(ISAM_del_duration);
             break;
@@ -262,7 +263,7 @@ void MainWindow::on_pushButton_clicked() // ISAM BUTTON
     ui->Accesses->setText(accesses);
     update_table_ISAM();
     
-    auto d = duration_cast<microseconds>(stop - start);
+    auto d = duration_cast<milliseconds>(stop - start);
     auto build_duration = d.count();
     update_TIMER(build_duration);
 }
@@ -280,7 +281,7 @@ void MainWindow::on_pushButton_2_clicked() // SEQUENTIAL BUTTON
     ui->Accesses->setText(accesses);
     update_table_SEQUENTIAL();
         
-    auto d = duration_cast<microseconds>(stop - start);
+    auto d = duration_cast<milliseconds>(stop - start);
     auto build_duration = d.count();
     update_TIMER(build_duration);
 }
